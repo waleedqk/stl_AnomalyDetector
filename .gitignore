@@ -6,6 +6,15 @@ __pycache__/
 # C extensions
 *.so
 
+# Compiled Object files
+*.o
+*.obj
+
+# Executables
+*.exe
+*.out
+*.app
+
 # Distribution / packaging
 .Python
 build/
@@ -102,3 +111,20 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Python 
+*.pyc
+__pycache__/
+
+# Text editor temporary files
+*~
+*.autosave
+.vscode/
+.idea/
+
+# ignore log files
+*.log
+
+# ANTLR
+*.tokens
+*.swp

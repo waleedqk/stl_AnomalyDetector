@@ -1,0 +1,112 @@
+# Installing ANTLR to run with Python
+
+**Install Maven**
+
+    sudo apt-get install maven
+
+**Download jar file**
+
+    cd /usr/local/lib
+    curl -O http://www.antlr.org/download/antlr-4.7.1-complete.jar
+
+**Add antlr4 to your class path.**
+
+    export CLASSPATH=".:/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH"
+
+**Create alias**
+
+    alias antlr4='java -Xmx500M -cp "/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH" org.antlr.v4.Tool'
+    alias grun='java org.antlr.v4.gui.TestRig'
+
+**Test install**
+
+    java org.antlr.v4.Tool
+
+**Add to bashrc**
+
+    export CLASSPATH=".:/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH"
+    alias antlr4='java -Xmx500M -cp "/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH" org.antlr.v4.Tool'
+    # alias grun='java org.antlr.v4.runtime.misc.TestRig'
+	alias grun='java org.antlr.v4.gui.TestRig'
+	alias antlr4py3='java -Xmx500M -cp "/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH" org.antlr.v4.Tool -Dlanguage=Python3'
+	alias antlr4py2='java -Xmx500M -cp "/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH" org.antlr.v4.Tool -Dlanguage=Python2'
+	alias antlr4vpy3='java -Xmx500M -cp "/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH" org.antlr.v4.Tool -Dlanguage=Python3 -no-listener -visitor'
+	alias antlr4vpy2='java -Xmx500M -cp "/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH" org.antlr.v4.Tool -Dlanguage=Python2 -no-listener -visitor'
+	alias pygrun='python3 /opt/antlr/antlr4/runtime/Python3/bin/pygrun'
+
+**Install runtime**
+
+    sudo pip install antlr4-python3-runtime
+    sudo pip3 install antlr4-python3-runtime
+    sudo pip install antlr4-python2-runtime
+
+**Install dependencies**
+
+    sudo pip3 install typing
+    sudo pip2 install typing
+
+***Python target***
+
+Python target support for ANTLR landed in version 4.4.
+In this short writeup, I would like to document the installation process.
+
+
+    mkdir -p /opt/antlr
+    cd /opt/antlr
+    git clone git@github.com:parrt/antlr4.git
+
+add the corresponding libraries from the site:
+
+    https://github.com/antlr/antlr4/blob/master/doc/python-target.md
+    https://pypi.python.org/pypi/antlr4-python2-runtime/
+    https://pypi.python.org/pypi/antlr4-python3-runtime/
+
+then
+
+    cd antlr4
+    export MAVEN_OPTS="-Xmx1G"
+    mvn clean
+    mvn -DskipTests install
+
+    ./bild.py mkjar
+
+    cd /opt/antlr/antlr4-python3
+    sudo python3 setup.py install
+
+    antlr4 -Dlanguage=Python3 Hello.g4
+
+    python3 execute.py hello-me
+
+**Check version (open terminal)**
+
+    antlr4
+
+Once installed, navigate to folder, specify the language to use, along with the grammar file name
+it will generate files to use
+
+    antlr4 -Dlanguage=Python3 Hello.g4
+
+
+**Grun with java**
+
+    antlr4 Hello.g4
+    javac *.java
+    grun Hello r -gui input.txt
+
+
+## References
+
+http://www.antlr.org/download.html
+
+https://github.com/antlr/antlr4/blob/master/doc/getting-started.md
+
+https://github.com/jszheng/py3antlr4book/blob/master/README.md
+
+https://stackoverflow.com/questions/31841151/antrl4-cant-get-python-antlr-to-generate-a-graphic-of-the-parse-tree
+
+https://tomassetti.me/antlr-mega-tutorial/
+
+***PyCharm ANTLR v4 grammar plugin***
+
+http://www.techinfected.net/2016/03/how-to-install-antlr4-in-ubuntulinux.html
+
