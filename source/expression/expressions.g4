@@ -6,9 +6,9 @@ grammar expressions;
 prog: exprs+ ;
 
 
-exprs:   expr (andorOp expr)* NEWLINE                   # regExpr
-     //|   expr (andorOp expr)* NEWLINE                   # andorExpr
-     |   NEWLINE                                        # blank
+exprs:   expr (andorOp expr)* NL                   # regExpr
+     //|   expr (andorOp expr)* NEWLINE            # andorExpr
+     |   NL                                        # blank
      ; 
 
 
@@ -65,5 +65,5 @@ NOT :   'NOT';
 
 ID  :   [a-zA-Z]+ ;      // match identifiers
 INT :   [0-9]+ ;         // Define token INT as one or more digits
-NEWLINE:'\r'? '\n' ;     // return newlines to parser (is end-statement signal)
+NL  :   '\r'? '\n' ;     // return newlines to parser (is end-statement signal)
 WS  :   [ \t]+ -> skip ; // Define whitespace rule, toss it out

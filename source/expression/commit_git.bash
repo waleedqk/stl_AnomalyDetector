@@ -9,11 +9,12 @@ FILE_LIST=(
     commit_git.bash
     README.md
     runme.bash
-    exp_expressions.expr
     expressions.g4
-    expression_visitor.py
-    sample_expressions.expr
-    test_expressions.py
+    expr_sample.expr
+    all.expr
+    main_expr.py
+    expr_visitor.py
+    expr_listener.py
 )
 
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
