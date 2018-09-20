@@ -18,5 +18,5 @@ FILE_LIST=(
 )
 
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
-git commit -m "Basic expression functionality tested. Until works in this commit"
+git commit -m "Made changes to listener so signal breakdown does not care for [t] and changed grammar to have lower case and or not. Made subsequent changes to the examples"
 git push origin master	

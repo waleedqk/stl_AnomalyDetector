@@ -51,7 +51,7 @@ relOp:
       ;
 
 andorOp:
-      'AND' | 'OR'
+      'and' | 'or'
       ;
 
 
@@ -78,7 +78,7 @@ OP_LEQ : '<=' ;
 OP_GT : '>' ;
 OP_GEQ : '>=' ;
 
-NOT :   'NOT';
+NOT :   'not';
 
 ID  :   [a-zA-Z]+ ;      // match identifiers
 INT :   [0-9]+ ;         // Define token INT as one or more digits

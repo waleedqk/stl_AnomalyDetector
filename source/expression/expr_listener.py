@@ -10,12 +10,6 @@ class expr_listener(expressionsListener):
         self.expr = ""
 
 
-    # Enter a parse tree produced by expressionsParser#prog.
-    def enterProg(self, ctx:expressionsParser.ProgContext):
-        self.stack = {}
-        self.signals = []
-        self.expr = ""
-
     def getExpr(self, ctx):
         return self.stack[ctx]
 
@@ -50,16 +44,16 @@ class expr_listener(expressionsListener):
         ( NOT z[t] >= 25) should output: NOT (z[t] >= 25)
         x[t] > 12 should output:  x[t] > 12
         '''
-        signal = ctx.signal().getText().strip()
+        signal = ctx.signal().signalID().getText().strip()
         relOp = ctx.relOp().getText().strip()
         value = ctx.signalValue().getText().strip()
         expr = ''
+        negation = ''
 
-        if (ctx.NOT() == None):
-            expr = "({} {} {})".format(signal, relOp, value)
-        else:
+        if (ctx.NOT() != None):
             negation = ctx.NOT().getText().strip()
-            expr = "({} ({} {} {}))".format(negation, signal, relOp, value)
+
+        expr = "({}({}[i] {} {}))".format(negation, signal, relOp, value)
 
         # print(expr)
         self.setExpr(ctx, expr)
