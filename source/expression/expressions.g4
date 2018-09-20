@@ -3,43 +3,48 @@
 grammar expressions;
 
 // parser rules start with lowercase letters, lexer rules with uppercase
-prog: exprs+ ;
+prog: (formula NL) ; // +
 
 
-exprs:   expr (andorOp expr)* NL                   # regExpr
-     //|   expr (andorOp expr)* NEWLINE            # andorExpr
-     |   NL                                        # blank
-     ; 
+//formula:   expr (andorOp expr)*                   # regExpr
+//     //|   expr (andorOp expr)* NEWLINE            # andorExpr
+//     |   NL                                        # blank
+//     ;
 
 
-expr :
-      untilTL                                           # untilExpr
-    | signalComp                                        # signalExpr
-    | '(' signalComp ')'                                # parensExpr
+formula :
+
+        formula 'U' timeslice formula                   # untilFormula
+        | formula andorOp formula                       # conjdisjFormula
+        | signalComp                                    # signalFormula
+        | '(' signalComp ')'                            # parensSignalFormula
+        | Bool                                          # propFormula
     ;
 
 
-untilTL :
-        signalComp 'U' timeslice signalComp             # until
+//untilTL :
+//        signalComp 'U' timeslice signalComp             # until
+//        ;
+
+signalComp:
+        NOT? signal relOp signalValue                           # signalBrakedown
         ;
 
 signal:
-        ID'[t]'                                         # signalName
+        signalID'[t]'                                         # signalName
+        | signalID                                            # signalName
         ;
 
-signalComp:
-        NOT? signal relOp INT                           # signalBrakedown
-        ;
 
 timeslice:
-        '[' INT ',' INT ']'                             # timerange
+        '[' start_t ',' end_t ']'                             # timerange
         ;
 
-Bool:
-      'true' 
-      | 'false'
- ;
 
+
+signalValue:
+        INT | Bool
+        ;
 
 relOp:
       OP_EE | OP_NE | OP_GT | OP_LEQ | OP_LT | OP_GEQ
@@ -48,6 +53,18 @@ relOp:
 andorOp:
       'AND' | 'OR'
       ;
+
+
+signalID: ID;
+
+start_t: INT;
+end_t: INT;
+
+
+Bool:
+      'True'
+      | 'False'
+ ;
 
 MUL :   '*' ; // assigns token name to '*' used above in grammar
 DIV :   '/' ;

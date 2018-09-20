@@ -1,7 +1,7 @@
 from expressionsVisitor import expressionsVisitor
 from expressionsParser import expressionsParser
 
-class expression_visitor(expressionsVisitor):
+class expr_visitor(expressionsVisitor):
     def __init__(self):
         self.signals = {}
         self.rule_expression = []

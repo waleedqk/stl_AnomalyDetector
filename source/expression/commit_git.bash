@@ -18,5 +18,5 @@ FILE_LIST=(
 )
 
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
-git commit -m "Initial commit to expression grammar"
+git commit -m "Basic expression functionality tested. Until works in this commit"
 git push origin master	
