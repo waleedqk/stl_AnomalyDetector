@@ -93,6 +93,15 @@ it will generate files to use
     javac *.java
     grun Hello r -gui input.txt
 
+**Instal autopep8**
+
+The application will generate a python file with the code. To ensure that the tabulations conform to specifications of python the following module will be used:
+
+	sudo pip3 install autopep8
+
+To use the module look at the man page, here is a simple example as well:
+
+
 
 ## References
 
