@@ -14,7 +14,7 @@ stl:
       ;
 
 globallyCall:
-      ALWAYS timeslice? '(' formula ')' #Gcall
+      ALWAYS timeslice? '(' formula (implies stl)? ')' #Gcall
       ;
 
 
@@ -22,6 +22,7 @@ formula :
 
         formula 'U' timeslice formula                   # untilFormula
         | formula andorOp formula                       # conjdisjFormula
+        | '(' formula andorOp formula ')'               # conjdisjFormula
         | signalComp                                    # signalFormula
         | '(' signalComp ')'                            # parensSignalFormula
         | Bool                                          # propFormula
@@ -41,6 +42,9 @@ timeslice:
         '[' start_t ',' end_t ']'                             # timerange
         ;
 
+implies:
+        '->'
+        ;
 
 
 signalValue:

@@ -62,4 +62,12 @@ See the visual parse tree
 
 **Run the test code**
 
+Test the expression part of the grammar. To see how a single expression is parsed and processed
+
+    python test_stl_expression.py
+
+Test the entire code base:
+
     python main.py stl.expr
+
+Will result in an output file called 'code.py' that can be run to see the validity of the rule on a given signal
