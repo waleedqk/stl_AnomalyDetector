@@ -23,5 +23,5 @@ FILE_LIST=(
 )
 
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
-git commit -m "stl_listener class is broken down into in terms of functionality. The stl_expression handles the logic related to expression, while the stl_listener inherits that class and add the functionality needed for the rules."
+git commit -m "Grammar now does implies -> stl. All *.expr files moved here to this directory."
 git push origin master	
