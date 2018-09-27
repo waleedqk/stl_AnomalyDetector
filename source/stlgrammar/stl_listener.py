@@ -6,14 +6,7 @@ from stlgrammarParser import stlgrammarParser
 from stlgrammarListener import stlgrammarListener
 
 
-'''
-The functionality is based on extending the listener since it visits all the nodes on its own
-
-The 'stl_expression.py' adds all the functionality related to just processing the expression portion of the stl rule
-'''
-from stl_expression import stl_listener
-
-class stl_listener(stl_listener):
+class stl_listener(stlgrammarListener):
 
     def __init__(self):
         self.stack = {}
@@ -23,21 +16,34 @@ class stl_listener(stl_listener):
         '''
         self.signals = []
 
-        self.expr = {}
-
         '''
         The code that is being generated is appended to the string
         '''
         self.code = ""
 
-    # Exit a parse tree produced by stlgrammarParser#Gcall.
-    def exitGcall(self, ctx:stlgrammarParser.GcallContext):
+
+    def getExpr(self, ctx):
+        '''
+
+        :param ctx: the node to whose contents need to be retrieved
+        :return:
+        '''
+        return self.stack[ctx]
+
+    def setExpr(self, ctx, value):
+        '''
+
+        :param ctx: the node which we need to annotate. Becomes the key to the dict value
+        :param value: the value we want to annotate the node with
+        :return:
+        '''
+        self.stack[ctx] = value
+
+    # Enter a parse tree produced by stlgrammarParser#Gcall.
+    def enterGcall(self, ctx:stlgrammarParser.GcallContext):
         code = ""
 
-        # get the parsed expression that is generated for this node
-        expr = self.getExpr(ctx.formula())
-
-        code += "\ncheck=True"
+        code += "\nGcall_check=True"
 
         # does this call have an associated timeslice with it
         if (ctx.timeslice() == None):
@@ -47,10 +53,22 @@ class stl_listener(stl_listener):
             end_t = ctx.timeslice().end_t().getText().strip()
             code += "\nfor i in range({}, {}):".format(start_t, end_t)
 
-        code += "\nif(not({})):".format(expr)
-        code += "\ncheck=False"
+        # get the parsed expression that is generated for this node
+        expr = self.getExpr(ctx.formula())
 
-        self.code = code
+        code += "\nif(({})):\npass".format(expr)
+
+        self.code += code
+
+
+    # Exit a parse tree produced by stlgrammarParser#Gcall.
+    def exitGcall(self, ctx:stlgrammarParser.GcallContext):
+        code = ""
+
+        code += "\nelse:"
+        code += "\nGcall_check=False"
+
+        self.code += code
 
     # Exit a parse tree produced by stlgrammarParser#prog.
     def exitProg(self, ctx:stlgrammarParser.ProgContext):
@@ -58,7 +76,7 @@ class stl_listener(stl_listener):
             code_output.write("\nx = [0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1]")
             code_output.write("\nif __name__ == '__main__':")
             code_output.write(self.code)
-            code_output.write('\nprint("{}".format(check))')
+            code_output.write('\nprint("{}".format(Gcall_check))')
 
         proc = subprocess.Popen(
         ['chmod', '+x', 'code.py'],
@@ -67,7 +85,8 @@ class stl_listener(stl_listener):
         print(stdoutdata)
 
         proc = subprocess.Popen(
-        ['autopep8', '--in-place', '--aggressive', '--aggressive', 'code.py'],
+        ['autopep8', '--in-place', '--aggressive', '--aggressive', '--select=E11,E101,E121', 'code.py'],
+        #     ['autopep8', 'code.py', '--select=E11,E101,E121', '--in-place'],
         stdout=subprocess.PIPE)
         (stdoutdata, stderrdata) = proc.communicate()
         print(stdoutdata)

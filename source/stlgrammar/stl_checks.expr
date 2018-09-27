@@ -2,6 +2,21 @@ G(x[t] > 3)
 G[2,6](x[t] > 10)
 G(x[t] > 0 -> F[0,5]y[t]>0)
 G(x[t] > 10 -> F[0,5] (G[0,2](x[t] < 5) ) )
-G[300,2500]((|y| <= 30) AND ((|y| > 0.5) -> F[0,150]G[0,20](|y| <= 0.5)))
+G[300,2500]((|y| <= 30) AND ((|y| > 5) -> F[0,150]G[0,20](|y| <= 5)))
 
 G[4,5]((x < 0 and x < 50) -> G(c > 10))
+
+whenever the trigger is on its rising edge,
+the analog signal x is allowed to take an arbitrary amplitude,
+but within 200 units, the signal must take an amplitude smaller or
+equal than 5 and continuously remain below that threshold
+for at least 100 units
+
+G(trigger>0 -> F[0,200]G[0,100](x <= 5))
+
+GF[0,300](trigger>0 -> F[0,200]G[0,100](x <= 5))
+
+
+
+
+G(|x| < 5 AND (trigger -> F[0,600] G[0,300] |x| < 1))

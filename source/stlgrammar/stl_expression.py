@@ -7,7 +7,7 @@ from stlgrammarListener import stlgrammarListener
 
 
 
-class stl_listener(stlgrammarListener):
+class stl_expression(stlgrammarListener):
     def __init__(self):
         self.stack = {}
 
@@ -15,14 +15,27 @@ class stl_listener(stlgrammarListener):
         keeps a unique list of all the signals being used in the stl rules
         '''
         self.signals = []
-        
-        self.expr = {}
 
+        '''
+        Index for beginning of all type of stl rules 
+        '''
+        self.ruleBegin = [stlgrammarParser.RULE_globallyeventuallyCall, stlgrammarParser.RULE_eventuallygloballyCall, stlgrammarParser.RULE_globallyCall, stlgrammarParser.RULE_eventuallyCall]
 
     def getExpr(self, ctx):
+        '''
+
+        :param ctx: the node to whose contents need to be retrieved
+        :return:
+        '''
         return self.stack[ctx]
 
     def setExpr(self, ctx, value):
+        '''
+
+        :param ctx: the node which we need to annotate. Becomes the key to the dict value
+        :param value: the value we want to annotate the node with
+        :return:
+        '''
         self.stack[ctx] = value
 
     # Exit a parse tree produced by stlgrammarParser#propFormula.
@@ -39,9 +52,14 @@ class stl_listener(stlgrammarListener):
         '''
         signal = ctx.getText()
 
+        # if the signal name is being seen for the first time, add to global signal list
         if signal not in self.signals:
             self.signals.append(signal)
 
+    # Exit a parse tree produced by stlgrammarParser#relOp.
+    def exitRelOp(self, ctx:stlgrammarParser.RelOpContext):
+        # print("relOP_type: {}".format(dir(ctx)))
+        print("RelOP: {} \t relopRuleIdx: {} \t relOPIdx: {} symbolicNames: {}".format(ctx.getText().strip(), ctx.getRuleIndex(), ctx.children[0].symbol.type, stlgrammarParser.symbolicNames[ctx.children[0].symbol.type]))
 
     # Exit a parse tree produced by stlgrammarParser#signalBrakedown.
     def exitSignalBrakedown(self, ctx:stlgrammarParser.SignalBrakedownContext):
@@ -64,7 +82,6 @@ class stl_listener(stlgrammarListener):
             
         expr = "({}({}[i] {} {}))".format(negation, signal, relOp, value)
 
-        # print(expr)
         self.setExpr(ctx, expr)
 
 

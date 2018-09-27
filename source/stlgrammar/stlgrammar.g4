@@ -9,12 +9,30 @@ import CommonLexerRules; // includes all rules from CommonLexerRules.g4
 prog: (stl NL) ; // + // (temporalLogic NL)+ ;
 
 stl:
-      globallyCall        # GLOBALLY
+        globallyeventuallyCall                  # GLOBALLYEVENTUALLY
+      | eventuallygloballyCall                  # EVENTUALLYGLOBALLY
+      | globallyCall                            # GLOBALLY
+      | eventuallyCall                          # EVENTUALLY
+      | formula                                 # STLFORMULA
 //       |   NL       # blank
       ;
 
+
+globallyeventuallyCall:
+      ALWAYS timeslice? EVENTUALLY timeslice? '(' stl (implies stl)? ')'            # GFcall
+      ;
+
+eventuallygloballyCall:
+      EVENTUALLY timeslice? ALWAYS timeslice? '(' stl (implies stl)? ')'            # FGcall
+      ;
+
+
 globallyCall:
-      ALWAYS timeslice? '(' formula (implies stl)? ')' #Gcall
+      ALWAYS timeslice? '(' stl (implies stl)? ')'                                  # Gcall
+      ;
+
+eventuallyCall:
+      EVENTUALLY timeslice? '(' stl (implies stl)? ')'                              # Fcall
       ;
 
 

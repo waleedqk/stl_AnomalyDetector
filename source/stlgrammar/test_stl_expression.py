@@ -4,7 +4,7 @@ from antlr4.InputStream import InputStream
 
 from stlgrammarLexer import stlgrammarLexer
 from stlgrammarParser import stlgrammarParser
-from stl_expression import stl_listener
+from stl_expression import stl_expression
 
 
 if __name__ == '__main__':
@@ -24,13 +24,10 @@ if __name__ == '__main__':
     print(lisp_tree_str)
 
 
-    # listener
+    # expression
     print("Start Walking...")
-    listener = stl_listener()
+    expressions = stl_expression()
     walker = ParseTreeWalker()
-    walker.walk(listener, tree)
+    walker.walk(expressions, tree)
     # print('result_stack=', listener.stack)
-
-    print('signal_list=', listener.signals)
-
-    print('expression=', listener.expr)
+    print('signal_list=', expressions.signals)

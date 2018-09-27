@@ -23,5 +23,5 @@ FILE_LIST=(
 )
 
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
-git commit -m "Grammar now does implies -> stl. All *.expr files moved here to this directory."
+git commit -m "Do multiple passes on the tree. First to evaluate the expressions, then to create the code. Update the grammar to to have stl formula in each call."
 git push origin master	
