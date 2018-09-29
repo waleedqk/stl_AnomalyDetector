@@ -42,7 +42,7 @@ formula :
         | formula andorOp formula                       # conjdisjFormula
         | '(' formula andorOp formula ')'               # conjdisjFormula
         | signalComp                                    # signalFormula
-        | '(' signalComp ')'                            # parensSignalFormula
+        | '(' signalComp ')'                            # signalFormula         // parensSignalFormula
         | Bool                                          # propFormula
     ;
 

@@ -20,8 +20,9 @@ FILE_LIST=(
     stl_expression.py
     stl_listener.py
     test_stl_expression.py
+    data.py
 )
 
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
-git commit -m "Do multiple passes on the tree. First to evaluate the expressions, then to create the code. Update the grammar to to have stl formula in each call."
+git commit -m "Single pass using 'python stl_expression.py stl.expr'. Creates the file 'runSTLcheck.py' and 'functions.py' with relevant code. Run final code using: 'python runSTLcheck.py'"
 git push origin master	

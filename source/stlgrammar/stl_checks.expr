@@ -16,7 +16,17 @@ G(trigger>0 -> F[0,200]G[0,100](x <= 5))
 
 GF[0,300](trigger>0 -> F[0,200]G[0,100](x <= 5))
 
-
+G (F[0,300](trigger>0) -> F[0,200]G[0,100](x <= 5))
 
 
 G(|x| < 5 AND (trigger -> F[0,600] G[0,300] |x| < 1))
+
+
+G(red -> (F (green AND (NOT green U yellow))))
+
+G[0,10](p -> F[1,2](q))
+
+
+
+
+a -> b   =    (not a) or (a and b)

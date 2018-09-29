@@ -29,5 +29,6 @@ if __name__ == '__main__':
     expressions = stl_expression()
     walker = ParseTreeWalker()
     walker.walk(expressions, tree)
-    # print('result_stack=', listener.stack)
-    print('signal_list=', expressions.signals)
+    # print('result_stack=', expressions.stack)
+    # print('signal_list=', expressions.signals)
+    # print('signal_list=', expressions.uids)

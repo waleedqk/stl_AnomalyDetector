@@ -1,5 +1,6 @@
 import os
 import subprocess
+import random
 
 from stlgrammarLexer import stlgrammarLexer
 from stlgrammarParser import stlgrammarParser
@@ -72,21 +73,22 @@ class stl_listener(stlgrammarListener):
 
     # Exit a parse tree produced by stlgrammarParser#prog.
     def exitProg(self, ctx:stlgrammarParser.ProgContext):
-        with open("code.py", "w") as code_output:
+        with open("functions.py", "w") as code_output:
+            code_output.write("\nimport * from functions")
             code_output.write("\nx = [0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1]")
             code_output.write("\nif __name__ == '__main__':")
             code_output.write(self.code)
             code_output.write('\nprint("{}".format(Gcall_check))')
 
         proc = subprocess.Popen(
-        ['chmod', '+x', 'code.py'],
+        ['chmod', '+x', 'functions.py'],
         stdout=subprocess.PIPE)
         (stdoutdata, stderrdata) = proc.communicate()
         print(stdoutdata)
 
         proc = subprocess.Popen(
-        ['autopep8', '--in-place', '--aggressive', '--aggressive', '--select=E11,E101,E121', 'code.py'],
-        #     ['autopep8', 'code.py', '--select=E11,E101,E121', '--in-place'],
+        ['autopep8', '--in-place', '--aggressive', '--aggressive', '--select=E11,E101,E121', 'functions.py'],
+        #     ['autopep8', 'functions.py', '--select=E11,E101,E121', '--in-place'],
         stdout=subprocess.PIPE)
         (stdoutdata, stderrdata) = proc.communicate()
         print(stdoutdata)
