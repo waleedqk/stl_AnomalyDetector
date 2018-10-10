@@ -12,8 +12,10 @@ FILE_LIST=(
     CommonLexerRules.g4
     stlgrammar.g4
     stl.expr
+    main.py
+    stlgrammarInterpreter.py
 )
 
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
-git commit -m "Test bed for stl grammar, to create the appropriate AST tree"
+git commit -m "Commit before Oct 10 meeting with Sebastian. New rules added: not formula , not prop. stlgrammarInterpreter.py to parse the simple formulas "
 git push origin master	

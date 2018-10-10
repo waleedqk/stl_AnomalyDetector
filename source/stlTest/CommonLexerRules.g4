@@ -5,11 +5,6 @@ lexer grammar CommonLexerRules; // note "lexer grammar"
 ALWAYS      :   'G';
 EVENTUALLY  :   'F';
 
-Bool:
-      'True'
-      | 'False'
- ;
-
 MUL :   '*' ; // assigns token name to '*' used above in grammar
 DIV :   '/' ;
 ADD :   '+' ;
