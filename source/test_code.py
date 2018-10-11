@@ -4,10 +4,12 @@
 REFERENCES:
 https://stackoverflow.com/questions/10666163/how-to-check-if-all-elements-of-a-list-matches-a-condition
 https://stackoverflow.com/questions/7270321/finding-the-index-of-elements-based-on-a-condition-using-python-list-comprehensi
-
+https://stackoverflow.com/questions/15959534/visibility-of-global-variables-in-imported-modules
 '''
 
-x = [0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1]
+x =         [0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1]
+
+trigger =   [0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 
 
 def check_until():
@@ -44,6 +46,37 @@ def check_until():
 
 
 
+def check_spike():
+    '''
+
+    G[0,5](trigger>0 -> F[0,6]G[0,10](x == 1))
+    :return:
+    '''
+
+    check_fg = True
+
+    for i in range(0,5):
+        if (trigger[i] > 0):
+
+            check_fg = False
+
+            # F[0,200]
+            for j in range(0,7):
+
+                check_fg = True
+
+                # G[0,100]
+                for k in range(0,10):
+
+                    if not (x[i+j+k] == 1):
+                        check_fg = False
+
+
+                if (check_fg):
+                    print("i:{} j:{} k:{}".format(i,j,k))
+                    break
+
+    print("Spike settled: {}".format(check_fg))
 
 
 
@@ -56,3 +89,5 @@ if __name__ == "__main__":
     print(x[0:10])
     z = all(i == 0 for i in x[0:10])
     print(z)
+
+    check_spike()

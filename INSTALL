@@ -1,13 +1,28 @@
 # Installing ANTLR to run with Python
 
+
+**Install JAVA jdk**
+
+    sudo apt install default-jdk
+
+    sudo add-apt-repository ppa:webupd8team/java
+    sudo apt update; sudo apt install oracle-java8-installer
+
+    java -version
+    javac -version
+
+    sudo apt install oracle-java8-set-default
+
 **Install Maven**
 
-    sudo apt-get install maven
+    sudo apt-get -y install maven
+
+    sudo apt -y install maven
 
 **Download jar file**
 
     cd /usr/local/lib
-    curl -O http://www.antlr.org/download/antlr-4.7.1-complete.jar
+    sudo curl -O http://www.antlr.org/download/antlr-4.7.1-complete.jar
 
 **Add antlr4 to your class path.**
 
@@ -51,26 +66,52 @@ Python target support for ANTLR landed in version 4.4.
 In this short writeup, I would like to document the installation process.
 
 
-    mkdir -p /opt/antlr
+    sudo mkdir -p /opt/antlr
     cd /opt/antlr
-    git clone git@github.com:parrt/antlr4.git
+
+
+    sudo git clone https://github.com/antlr/antlr4.git     ||     git clone git@github.com:parrt/antlr4.git
 
 add the corresponding libraries from the site:
+- Download the antlr4-python*-runtime-*.tar.gz for both version
+- Unzip them and move them to /opt/antlr
 
     https://github.com/antlr/antlr4/blob/master/doc/python-target.md
+
+
     https://pypi.python.org/pypi/antlr4-python2-runtime/
+
+        pip install antlr4-python2-runtime
+
     https://pypi.python.org/pypi/antlr4-python3-runtime/
+
+        pip install antlr4-python3-runtime
+
+Unzip the tar.gz files:
+
+    tar -xzf <filename>
+
+Move the files to /opt/antlr:
+
+    sudo mv -v ~/Downloads/antlr4-python2-runtime-4.7.1 /opt/antlr/
+    sudo mv -v ~/Downloads/antlr4-python3-runtime-4.7.1 /opt/antlr/
 
 then
 
     cd antlr4
-    export MAVEN_OPTS="-Xmx1G"
-    mvn clean
-    mvn -DskipTests install
+    export MAVEN_OPTS="-Xmx1G"                 ||         export MAVEN_OPTS="-Xmx4G"   (last used)
+    sudo mvn clean
+    sudo mvn -DskipTests install
 
     ./bild.py mkjar
 
-    cd /opt/antlr/antlr4-python3
+
+Build the modules: 
+
+    cd /opt/antlr/antlr4-python2-runtime-4.7.1/
+    sudo python3 setup.py install
+
+    cd /opt/antlr/antlr4-python3-runtime-4.7.1/
     sudo python3 setup.py install
 
     antlr4 -Dlanguage=Python3 Hello.g4

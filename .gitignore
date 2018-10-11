@@ -116,6 +116,21 @@ venv.bak/
 *.pyc
 __pycache__/
 
+# JAVA
+
+# Compiled class file
+*.class
+*.java
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
 # Text editor temporary files
 *~
 *.autosave
@@ -126,5 +141,8 @@ __pycache__/
 *.log
 
 # ANTLR
+.antlr/
 *.tokens
 *.swp
+*.interp
+
