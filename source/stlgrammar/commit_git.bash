@@ -16,6 +16,7 @@ FILE_LIST=(
     stl.expr
     stl_checks.expr
     main.py
+    stlgrammarInterpreter.py
     grammarvisitor.py
     stl_expression.py
     stl_listener.py
@@ -24,5 +25,5 @@ FILE_LIST=(
 )
 
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
-git commit -m "Committing stlgrammar folder before merging code from stlTest to this folder and updating the grammar"
+git commit -m "Merged changes from stlTest into this single folder. Read the README.md section **Run the test code** to see how to run the code."
 git push origin master	

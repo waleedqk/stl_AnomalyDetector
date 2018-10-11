@@ -4,42 +4,41 @@ from antlr4.InputStream import InputStream
 
 from stlgrammarLexer import stlgrammarLexer
 from stlgrammarParser import stlgrammarParser
-from stl_expression import stl_expression
-from stl_listener import stl_listener
+from stlgrammarInterpreter import stlgrammarInterpreter
 
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
-        input_stream = FileStream(sys.argv[1])
+        stlFile = open(sys.argv[1], 'r')
     else:
         # input_stream = InputStream(sys.stdin.readline())
-        input_stream = FileStream("stl.expr")
+        stlFile = open('stl.expr','r')
 
-    lexer = stlgrammarLexer(input_stream)
-    token_stream = CommonTokenStream(lexer)
-    parser = stlgrammarParser(token_stream)
-    tree = parser.prog() # parse; start at prog
+    with open("temp_expr_parser.txt", "w") as code_output:
+        code_output.write("\n")
 
-    # print tree as text
-    lisp_tree_str = tree.toStringTree(recog=parser)
-    print(lisp_tree_str)
+    for line in stlFile.readlines():
+        stlRule = line.strip()
 
-    # expression
-    print("Start Walking...")
-    expressions = stl_expression()
-    walker = ParseTreeWalker()
-    walker.walk(expressions, tree)
-    # print('result_stack=', expressions.stack)
-    print('signal_list=', expressions.signals)
+        lexer = stlgrammarLexer(InputStream(stlRule))
+        token_stream = CommonTokenStream(lexer)
+        parser = stlgrammarParser(token_stream)
+        tree = parser.prog() # parse; start at prog
 
-    # listener
-    print("Start Walking...")
-    listener = stl_listener()
-    listener.stack = expressions.stack
-    listener.signals = expressions.signals
-    listener.ruleBegin = expressions.ruleBegin
+        # print tree as text
+        lisp_tree_str = tree.toStringTree(recog=parser)
+        print(lisp_tree_str)
 
-    walker = ParseTreeWalker()
-    walker.walk(listener, tree)
 
-    print('signal_list=', listener.signals)
+        # stlgrammarInterpreter
+        # print("Start Walking...")
+        interpreter = stlgrammarInterpreter()
+        walker = ParseTreeWalker()
+        walker.walk(interpreter, tree)
+        # print('signal_list=', interpreter.signals)
+
+        # with open("temp_expr_parser.txt", "a") as code_output:
+        #     code_output.write("\n"+str(interpreter.finalProg))
+
+
+    stlFile.close()

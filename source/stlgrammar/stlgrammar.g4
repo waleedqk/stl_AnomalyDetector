@@ -6,53 +6,47 @@ import CommonLexerRules; // includes all rules from CommonLexerRules.g4
 // parser rules start with lowercase letters, lexer rules with uppercase
 
 
-prog: (stl NL) ; // + // (temporalLogic NL)+ ;
+prog: (stl EOF) ; // + // (temporalLogic NL)+ ;
 
 stl:
-        globallyeventuallyCall                  # GLOBALLYEVENTUALLY
-      | eventuallygloballyCall                  # EVENTUALLYGLOBALLY
-      | globallyCall                            # GLOBALLY
-      | eventuallyCall                          # EVENTUALLY
-      | formula                                 # STLFORMULA
+
+        modifier '(' stl implies stl ')'        # stlModImplies
+      |  stl implies stl                        # stlImplies
+      | modifier '(' stl ')'                    # stlSingular
+      | stl andorOp stl                         # stlConjstl
+      | formula                                 # stlFormula
+      | '(' stl ')'                             # stlParens
 //       |   NL       # blank
       ;
 
 
-globallyeventuallyCall:
-      ALWAYS timeslice? EVENTUALLY timeslice? '(' stl (implies stl)? ')'            # GFcall
-      ;
-
-eventuallygloballyCall:
-      EVENTUALLY timeslice? ALWAYS timeslice? '(' stl (implies stl)? ')'            # FGcall
-      ;
-
-
-globallyCall:
-      ALWAYS timeslice? '(' stl (implies stl)? ')'                                  # Gcall
-      ;
-
-eventuallyCall:
-      EVENTUALLY timeslice? '(' stl (implies stl)? ')'                              # Fcall
+modifier:
+        ALWAYS timeslice?                                   # Gcall
+      | EVENTUALLY timeslice?                               # Fcall
       ;
 
 
 formula :
-
-        formula 'U' timeslice formula                   # untilFormula
+          formula  implies formula                      # impliesFormula
+        | formula 'U' timeslice formula                 # untilFormula
         | formula andorOp formula                       # conjdisjFormula
-        | '(' formula andorOp formula ')'               # conjdisjFormula
         | signalComp                                    # signalFormula
-        | '(' signalComp ')'                            # signalFormula         // parensSignalFormula
+        | NOT '(' formula ')'                           # signalNegFormula
+        | NOT? '(' signal ')'                           # signalProp
+        | '(' formula ')'                               # parensFormula
         | Bool                                          # propFormula
     ;
 
 signalComp:
-        NOT? signal relOp signalValue                           # signalBrakedown
+          signal relOp expr                             # signalExpr
+        | expr relOp signal                             # signalExpr
+        | Bool relOp signal                             # signalBool
+        | signal relOp Bool                             # signalBool
         ;
 
 signal:
-        signalID'[t]'                                         # signalName
-        | signalID                                            # signalName
+        signalID'[t]'                                   # signalName
+        | signalID                                      # signalName
         ;
 
 
@@ -64,10 +58,18 @@ implies:
         '->'
         ;
 
+expr:   expr op=('*'|'/') expr      # MulDivExpr
+    |   expr op=('+'|'-') expr      # AddSubExpr
+    |   INT                         # intExpr
+//    |   ID                          # id
+    |   '(' expr ')'                # parensExpr
+    ;
 
 signalValue:
         INT | Bool
         ;
+
+
 
 relOp:
       OP_EE | OP_NE | OP_GT | OP_LEQ | OP_LT | OP_GEQ
@@ -77,8 +79,11 @@ andorOp:
       'and' | 'or'
       ;
 
+Bool:
+      'True' | 'False'
+ ;
 
 signalID: ID;
 
 start_t: INT;
-end_t: INT;
+end_t: INT | 'INF';

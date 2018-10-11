@@ -62,12 +62,10 @@ See the visual parse tree
 
 **Run the test code**
 
-Test the expression part of the grammar. To see how a single expression is parsed and processed
-
-    python test_stl_expression.py
-
-Test the entire code base:
+The code from the stlTest folder has just been ported over to this folder and the grammar has been updated as during the meeting discussions. 
 
     python main.py stl.expr
 
-Will result in an output file called 'code.py' that can be run to see the validity of the rule on a given signal
+Will result in an output file called ```functions.py``` that can be run to see the validity of the rule on a given signal. The supplementary file ```runSTLcheck.py``` is the file that will be called finally but htat functionality has not been fully re-enabled. ```data.py``` holds some arrays that act as the data used by the checks. 
+
+The extensive code from the grammar one version prior can be found in the file ```stl_expression.py``` and is going to be kept till that functionality has been ported over but the code is outdated as of today and will not work.
