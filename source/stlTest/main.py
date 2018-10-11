@@ -37,8 +37,8 @@ if __name__ == '__main__':
         walker.walk(interpreter, tree)
         # print('signal_list=', interpreter.signals)
 
-        with open("temp_expr_parser.txt", "a") as code_output:
-            code_output.write("\n"+str(interpreter.finalProg))
+        # with open("temp_expr_parser.txt", "a") as code_output:
+        #     code_output.write("\n"+str(interpreter.finalProg))
 
 
     stlFile.close()

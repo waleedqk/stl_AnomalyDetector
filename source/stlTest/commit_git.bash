@@ -14,8 +14,9 @@ FILE_LIST=(
     stl.expr
     main.py
     stlgrammarInterpreter.py
+    data.py
 )
 
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
-git commit -m "Commit before Oct 10 meeting with Sebastian. New rules added: not formula , not prop. stlgrammarInterpreter.py to parse the simple formulas "
+git commit -m "Commit before meeting with Sebastian 11/10/2018. G(formula) generates code that can be run. "
 git push origin master	

@@ -13,10 +13,7 @@ stl:
         modifier '(' stl implies stl ')'        # stlModImplies
       |  stl implies stl                        # stlImplies
       | modifier '(' stl ')'                    # stlSingular
-//      | '(' modifier  '(' stl ')' ')'           # stlSingular
-//      | modifier '(' '(' stl ')' ')'            # stlSingular
       | stl andorOp stl                         # stlConjstl
-//      | '(' stl andorOp stl   ')'               # stlConjstl
       | formula                                 # stlFormula
       | '(' stl ')'                             # stlParens
 //       |   NL       # blank
@@ -24,8 +21,6 @@ stl:
 
 
 modifier:
-//        ALWAYS timeslice? EVENTUALLY timeslice?             # GFcall
-//      | EVENTUALLY timeslice? ALWAYS timeslice?             # FGcall
         ALWAYS timeslice?                                   # Gcall
       | EVENTUALLY timeslice?                               # Fcall
       ;

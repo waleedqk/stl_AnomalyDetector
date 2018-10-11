@@ -32,6 +32,11 @@ class stlgrammarInterpreter(stlgrammarListener):
         self.uids = {}
 
         '''
+        The maximum time range that can be put to a STL rule
+        '''
+        self.time_max = 1000
+
+        '''
         Index for beginning of all type of stl rules 
         '''
         # self.ruleBegin = [stlgrammarParser.RULE_globallyeventuallyCall, stlgrammarParser.RULE_eventuallygloballyCall, stlgrammarParser.RULE_globallyCall, stlgrammarParser.RULE_eventuallyCall]
@@ -84,6 +89,23 @@ class stlgrammarInterpreter(stlgrammarListener):
         self.stack[ctx] = value
 
 
+    def getUID(self, ctx):
+        '''
+
+        :param ctx:
+        :return: get the UID and function call associated with the ctx
+        '''
+        return self.uids[ctx]
+
+    def setUID(self, ctx, value):
+        '''
+
+        :param ctx:
+        :param value: set UID and function call associated with each node
+        :return:
+        '''
+        self.uids[ctx] = value
+
     # Enter a parse tree produced by stlgrammarParser#prog.
     def enterProg(self, ctx:stlgrammarParser.ProgContext):
         '''
@@ -96,6 +118,36 @@ class stlgrammarInterpreter(stlgrammarListener):
             code_output.write("\n\nfrom functions import *")
             code_output.write("\n\nif __name__ == '__main__':")
 
+    # Enter a parse tree produced by stlgrammarParser#stlSingular.
+    def enterStlSingular(self, ctx:stlgrammarParser.StlSingularContext):
+        '''
+
+        :param ctx:
+        :return:
+        '''
+        modifier = ctx.modifier().getChild(0).getText().strip()
+
+        # get unique ID for this node
+        uid = str(self.getUniqueId())
+        # the function call that will use this UID
+        func_call = modifier + "_" +uid
+
+        # annotate the node with the variables
+        self.setUID(ctx, {"uid": uid, "func": func_call})
+
+    # Enter a parse tree produced by stlgrammarParser#stlFormula.
+    def enterStlFormula(self, ctx:stlgrammarParser.StlFormulaContext):
+        '''
+
+        :param ctx:
+        :return:
+        '''
+        # get unique ID for this node
+        uid = str(self.getUniqueId())
+        # the function call that will use this UID
+        func_call = "Phi_" + uid
+        # annotate the node with the variables
+        self.setUID(ctx, {"uid": uid, "func": func_call})
 
     # Exit a parse tree produced by stlgrammarParser#signalID.
     def exitSignalID(self, ctx:stlgrammarParser.SignalIDContext):
@@ -206,7 +258,7 @@ class stlgrammarInterpreter(stlgrammarListener):
         relOp = ctx.relOp().getText().strip()
         expr = self.getExpr(ctx.expr())
 
-        SignalExpr = "({} {} {})".format(signal, relOp, expr)
+        SignalExpr = "({}[t] {} {})".format(signal, relOp, expr)
         # print(SignalExpr)
 
         self.setExpr(ctx, SignalExpr)
@@ -223,7 +275,7 @@ class stlgrammarInterpreter(stlgrammarListener):
         relOp = ctx.relOp().getText().strip()
         boolVal = ctx.Bool().getText().strip()
 
-        SignalBool = "({} {} {})".format(signal, relOp, boolVal)
+        SignalBool = "({}[t] {} {})".format(signal, relOp, boolVal)
         # print(SignalBool)
 
         self.setExpr(ctx, SignalBool)
@@ -336,8 +388,58 @@ class stlgrammarInterpreter(stlgrammarListener):
         :param ctx:
         :return:
         '''
+        expr = self.getExpr(ctx.formula())
+        self.setExpr(ctx, expr)
 
-        self.setExpr(ctx, self.getExpr(ctx.formula()))
+        code = ""
+        code += "\n\ndef "+ str(self.getUID(ctx)["func"]) + "(t):"
+        code += "\n\tif(" + expr + "):"
+        code += "\n\t\treturn t"
+        code += "\n\telse:"
+        code += "\n\t\t return False"
+
+
+        self.appendCode("functions.py", code)
+
+
+    # Exit a parse tree produced by stlgrammarParser#stlSingular.
+    def exitStlSingular(self, ctx:stlgrammarParser.StlSingularContext):
+        '''
+
+        :param ctx:
+        :return:
+        '''
+
+        modifier = ctx.modifier().getChild(0).getText().strip()
+
+        timeRange = (ctx.modifier().timeslice() != None)
+        if timeRange:
+            start_t = ctx.modifier().timeslice().start_t().getText().strip()
+            end_t = ctx.modifier().timeslice().end_t().getText().strip()
+        else:
+            start_t = 0
+            end_t = self.time_max
+        # print("start: {} \t end: {}".format(start_t, end_t))
+
+        stl_call = self.getUID(ctx.stl())["func"] + "(t=t)"
+
+        code = "\n"
+        code += "\n\ndef " + str(self.getUID(ctx)["func"]) + "(t):"
+        code += "\n\t"+modifier+"_check_" + str(self.getUID(ctx)["uid"]) + "=True"
+
+        code += "\n\tfor t in range({}, {}):".format(start_t, end_t)
+        code += "\n\t\t"+modifier+"_check_" + str(self.getUID(ctx)["uid"]) + " = " + stl_call
+        code += "\n\n\t\tif ("+modifier+"_check_" + str(self.getUID(ctx)["uid"]) + ") == False:"
+        code += "\n\t\t\tbreak"
+
+        code += "\n\n\t\telse:"
+        code += "\n\t\t\tpass"
+
+
+        code += "\n\treturn "+modifier+"_check_" +  str(self.getUID(ctx)["uid"])
+
+        self.appendCode("functions.py", code)
+
 
     # Exit a parse tree produced by stlgrammarParser#prog.
     def exitProg(self, ctx:stlgrammarParser.ProgContext):
@@ -346,7 +448,5 @@ class stlgrammarInterpreter(stlgrammarListener):
         :param ctx:
         :return:
         '''
-
-        formula = self.getExpr(ctx.stl())
-        self.finalProg = formula
-        # print("The final formula is: {}".format(formula))
+        pass
+        # formula = self.getExpr(ctx.stl())
