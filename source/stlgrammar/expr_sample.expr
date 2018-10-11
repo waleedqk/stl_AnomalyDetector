@@ -1,1 +1,1 @@
-G(c > 10 and (d[t] > 15) and x[t] > 10 and y[t] > 15)
+c > 10 and (d[t] > 15) and x[t] > 10 and y[t] > 15

@@ -24,5 +24,5 @@ FILE_LIST=(
 )
 
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
-git commit -m "Single pass using 'python stl_expression.py stl.expr'. Creates the file 'runSTLcheck.py' and 'functions.py' with relevant code. Run final code using: 'python runSTLcheck.py'"
+git commit -m "Committing stlgrammar folder before merging code from stlTest to this folder and updating the grammar"
 git push origin master	

@@ -1,8 +1,40 @@
-x[t] > 12
+x > 12
+(4/63 < a)
+((4/63) < a)
+((4/63*4+3) < a)
+((4/63*(4+3)) < a)
+(4/3)<a 
+
+a == True
+(False != a)
+
 x[t] > 10 and y[t] > 15
 c > 10 and (d[t] > 15)
 c > 10 and (d[t] > 15) and x[t] > 10 and y[t] > 15
 True U [10, 15] y[t] > 25
 x[t] > 9 U [10, 15] y[t] > 25
 x[t] > 12 and x[t] > 9 U [10, 15] y[t] > 25 and (z[t] >= 25)
-x[t] > 12 and x[t] > 9 U [10, 15] y[t] > 25 and ( NOT z[t] >= 25)
+x[t] > 12 and x[t] > 9 U [10, 15] y[t] > 25 and ( not z[t] >= 25)
+
+a>3 -> y<10
+(a>3) -> (b>3)
+(a>3) -> ( b>3 -> c>3)
+(((( a> 3))))
+(((( a> 3)))) -> (a>3)
+
+
+
+(a>3) -> ( b>3 -> c==True)
+
+
+not (a>3)
+not ((a>3) -> not (c))
+
+True and False
+True -> False
+True -> (a!= 3)
+
+x > 9 U [10, 15] y > 25 -> (a!= 3)
+not(x > 9) U [10, 15] y > 25 -> (a!= 3)
+
+(not(x > 9) U [10, 15] y > 25) -> (a!= 3)

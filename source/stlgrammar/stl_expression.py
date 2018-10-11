@@ -90,18 +90,20 @@ class stl_expression(stlgrammarListener):
             code_output.write("\nimport os, sys, random")
             # code_output.write("\n\nx = [0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1]")
             # code_output.write("\ny = [0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1]")
-
             code_output.write("\n\nfrom functions import *")
-
-
             code_output.write("\n\nif __name__ == '__main__':")
 
 
     # Enter a parse tree produced by stlgrammarParser#Gcall.
     def enterGcall(self, ctx:stlgrammarParser.GcallContext):
+        # get unique ID for this node
         uid = str(self.getUniqueId())
+        # the function call that will use this UID
         func_call = "G_"+uid
+        # boolean value associated with the satisfiability of this rule
         property_check = "G_"+uid+"_bool"
+
+        # annotate the node with the vaeiables
         self.setUID(ctx, {"uid": uid, "func": func_call})
 
         implies = (ctx.implies() != None)         # ctx.globallyCall().implies()
@@ -110,7 +112,7 @@ class stl_expression(stlgrammarListener):
 
     # Exit a parse tree produced by stlgrammarParser#Gcall.
     def exitGcall(self, ctx:stlgrammarParser.GcallContext):
-        code = "\n\n"
+        code = "\n"
 
         code += "\n\ndef " + str(self.getUID(ctx)["func"]) + "(t):"
 
@@ -175,7 +177,7 @@ class stl_expression(stlgrammarListener):
         code += "\n\tif(" + expr + "):"
         code += "\n\t\treturn t"
         code += "\n\telse:"
-        code += "\n\t\t return None"
+        code += "\n\t\t return False"
 
 
         self.appendCode("functions.py", code)
@@ -266,6 +268,7 @@ class stl_expression(stlgrammarListener):
 
         expr = ''
 
+        # check if the formula is simply a true false statement
         if theta not in ["True", "False"]:
             theta_NOT = ""
             theta_signal = ctx.formula(0).signalComp().signal().signalID().getText().strip()
@@ -276,6 +279,7 @@ class stl_expression(stlgrammarListener):
 
             # print("({}({} {} {}))".format(theta_NOT, theta_signal, theta_relOp, theta_signalValue))
 
+        # check if the formula is simply a true false statement
         if phi not in ["True", "False"]:
             phi_NOT = ""
             phi_signal = ctx.formula(1).signalComp().signal().signalID().getText().strip()
