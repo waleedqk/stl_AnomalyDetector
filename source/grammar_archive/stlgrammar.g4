@@ -14,6 +14,7 @@ stlFormula:
         | 'G' timeslice? stlFormula                     # stlglobalFormula
         | 'F' timeslice? stlFormula                     # stleventualFormula
         | signalComp                                    # stlsignalComp
+        | signal                                        # stlsignal
         | Bool                                          # stlprop
         | '(' stlFormula ')'                            # stlParens
       ;

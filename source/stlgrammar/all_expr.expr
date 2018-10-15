@@ -14,7 +14,9 @@ c > 10 and (d[t] > 15) and x[t] > 10 and y[t] > 15
 True U [10, 15] y[t] > 25
 x[t] > 9 U [10, 15] y[t] > 25
 x[t] > 12 and x[t] > 9 U [10, 15] y[t] > 25 and (z[t] >= 25)
+(x[t] > 12) and x[t] > 9 U [10, 15] y[t] > 25 and (z[t] >= 25)
 x[t] > 12 and x[t] > 9 U [10, 15] y[t] > 25 and ( not z[t] >= 25)
+(x[t] > 12) and (x[t] > 9 U [10, 15] y[t] > 25) and (z[t] >= 25)
 
 a>3 -> y<10
 (a>3) -> (b>3)
@@ -38,3 +40,110 @@ x > 9 U [10, 15] y > 25 -> (a!= 3)
 not(x > 9) U [10, 15] y > 25 -> (a!= 3)
 
 (not(x > 9) U [10, 15] y > 25) -> (a!= 3)
+
+
+
+G(x[t] > 3)
+G(c > 10 and (d[t] > 15) and x[t] > 10 and y[t] > 15)
+G(x[t] > 12 and x[t] > 9 U [10, 15] y[t] > 25 and (z[t] >= 25))
+G[2,6](x[t] > 10)
+G(x[t] > 0 -> (y[t]>0))
+G(x[t] > 0 -> F[0,5](y[t]>0))
+G((x[t] > 0) -> F[0,5](y[t]>0))
+G((x[t] > 10 and y[t] > 15) -> F[0,5](y[t]>0))
+G(((x[t] > 10) and y[t] > 15) -> F[0,5](y[t]>0))
+G((x[t] > 10 and y[t] > 15) -> (y[t]>0))
+G(  x[t] > 0 and   F[0,5](y[t] > 10)    ->    F[0,5](y[t]>0)  )
+G(  (x[t] > 0 and F[0,5](y[t] > 10) )   ->    F[0,5](y[t]>0)  )
+G(x[t] > 10 -> F[0,5] (G[0,2](x[t] < 5) ) )
+G( G[3,5](F[2,5](x[t] > 0)) -> (y[t]>0))
+
+
+
+
+G(x[t] > 10 -> F[0,5] (G[0,2](x[t] < 5) ) )
+G[300,2500]((|y| <= 30) AND ((|y| > 5) -> F[0,150]G[0,20](|y| <= 5)))
+
+G[4,5]((x < 0 and x < 50) -> G(c > 10))
+
+whenever the trigger is on its rising edge,
+the analog signal x is allowed to take an arbitrary amplitude,
+but within 200 units, the signal must take an amplitude smaller or
+equal than 5 and continuously remain below that threshold
+for at least 100 units
+
+G(trigger>0 -> F[0,200](G[0,100](x <= 5)))
+
+GF[0,300](trigger>0 -> F[0,200]G[0,100](x <= 5))
+
+G (F[0,300](trigger>0) -> F[0,200]G[0,100](x <= 5))
+
+
+G(|x| < 5 AND (trigger -> F[0,600] G[0,300] |x| < 1))
+
+
+G(red -> F(green and not((green U [5,10] yellow))))
+
+G[0,10](p -> F[1,2](q))
+
+
+
+
+a -> b   =    (not a) or (a and b)
+
+
+
+#############################################################
+########################TEST#################################
+#############################################################
+
+#G ( ( F(b<3)-> G(a==3) ) -> F(a>3))
+#G (  F(b<3)-> (G(a==3)  -> F(a>3)))
+#G (  ( G(a==3)  -> F(a>3) ) )
+#G (  ( a>3 ) )
+
+#F[10,2] ( a>3  )
+
+#F ( 4<a  )
+#F ( (4+3)<a  )
+#F ( (4/3)<a  )
+#G(F[3,2] (a>3))
+#G(F[3,2] (a>3 -> y<10))
+F ( G[3,2] (a>3 -> y<10) ) =??= F G[3,2] (a>3 -> y<10) 
+
+#(a>3) -> (b>3)
+#(a>3) -> ( b>3 -> c>3)
+#(((( a> 3))))
+#(((( a> 3)))) -> (a>3)
+
+#G[2,3]( True -> True )
+#G[2,3]( True -> False )
+#G[2,3]( True and False )
+
+#G[2,3]( True -> (a!= 3) )
+#G[2,3]( True -> False )
+
+
+#F[3,INF] ( a>3  )
+F[-3,2] ( a>3  )
+
+
+
+
+G ( ( True == False ) )
+G (  not (a > 3) )
+
+G ( (a > not ( b ) ) )
+G (   (a > not ( True ) ) )
+G (   (a == not ( True ) ) )
+
+#G (   a == True and not b == not True )
+G (   not ( a > 3 ))
+G (   not ( True ))
+G (   not ( False ))
+
+G (   not (a > 3 and b < 3 or c > 2 and d > 3) )
+G (   not ( a -> b ) )
+G (   not ( a>3) ) 
+G (   not (x > a)  )
+G (   not ( (a < 3) == not ( b > 3 ) ) )
