@@ -6,36 +6,21 @@ import CommonLexerRules; // includes all rules from CommonLexerRules.g4
 // parser rules start with lowercase letters, lexer rules with uppercase
 
 
-prog: (stl EOF) ; // + // (temporalLogic NL)+ ;
+prog: (stlFormula EOF) ; // + // (temporalLogic NL)+ ;
 
-stl:
-
-        modifier '(' stl implies stl ')'        # stlModImplies
-      |  stl implies stl                        # stlImplies
-      | modifier '(' stl ')'                    # stlSingular
-      | stl andorOp stl                         # stlConjstl
-      | formula                                 # stlFormula
-      | '(' stl ')'                             # stlParens
-//       |   NL       # blank
+stlFormula:
+        stlFormula implies stlFormula                   # stlFormulaImplies
+        | stlFormula andorOp stlFormula                 # stlConjDisjFormula
+        | stlFormula 'U' timeSlice stlFormula           # stlUntilFormula
+        | NOT '(' stlFormula ')'                        # stlNotFormula
+        | 'G' timeSlice? stlFormula                     # stlGlobalFormula
+        | 'F' timeSlice? stlFormula                     # stlEventualFormula
+        | signalComp                                    # stlSignalComp
+        | signal                                        # stlSignal
+        | Bool                                          # stlProp
+        | '(' stlFormula ')'                            # stlParens
       ;
 
-
-modifier:
-        ALWAYS timeslice?                                   # Gcall
-      | EVENTUALLY timeslice?                               # Fcall
-      ;
-
-
-formula :
-          formula  implies formula                      # impliesFormula
-        | formula 'U' timeslice formula                 # untilFormula
-        | formula andorOp formula                       # conjdisjFormula
-        | signalComp                                    # signalFormula
-        | NOT '(' formula ')'                           # signalNegFormula
-        | NOT? '(' signal ')'                           # signalProp
-        | '(' formula ')'                               # parensFormula
-        | Bool                                          # propFormula
-    ;
 
 signalComp:
           signal relOp expr                             # signalExpr
@@ -50,19 +35,19 @@ signal:
         ;
 
 
-timeslice:
-        '[' start_t ',' end_t ']'                             # timerange
+timeSlice:
+        '[' start_t ',' end_t ']'                       # timerange
         ;
 
 implies:
         '->'
         ;
 
-expr:   expr op=('*'|'/') expr      # MulDivExpr
-    |   expr op=('+'|'-') expr      # AddSubExpr
-    |   INT                         # intExpr
+expr:   expr op=('*'|'/') expr                          # MulDivExpr
+    |   expr op=('+'|'-') expr                          # AddSubExpr
+    |   INT                                             # intExpr
 //    |   ID                          # id
-    |   '(' expr ')'                # parensExpr
+    |   '(' expr ')'                                    # parensExpr
     ;
 
 signalValue:
@@ -80,7 +65,7 @@ andorOp:
       ;
 
 Bool:
-      'True' | 'False'
+      'True' | 'False' | '(' Bool ')'
  ;
 
 signalID: ID;

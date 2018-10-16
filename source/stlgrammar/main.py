@@ -14,9 +14,6 @@ if __name__ == '__main__':
         # input_stream = InputStream(sys.stdin.readline())
         stlFile = open('stl.expr','r')
 
-    with open("temp_expr_parser.txt", "w") as code_output:
-        code_output.write("\n")
-
     for line in stlFile.readlines():
         stlRule = line.strip()
 
@@ -36,9 +33,6 @@ if __name__ == '__main__':
         walker = ParseTreeWalker()
         walker.walk(interpreter, tree)
         # print('signal_list=', interpreter.signals)
-
-        # with open("temp_expr_parser.txt", "a") as code_output:
-        #     code_output.write("\n"+str(interpreter.finalProg))
 
 
     stlFile.close()

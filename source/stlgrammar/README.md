@@ -66,6 +66,8 @@ The code from the stlTest folder has just been ported over to this folder and th
 
     python main.py stl.expr
 
-Will result in an output file called ```functions.py``` that can be run to see the validity of the rule on a given signal. The supplementary file ```runSTLcheck.py``` is the file that will be called finally but htat functionality has not been fully re-enabled. ```data.py``` holds some arrays that act as the data used by the checks. 
+Will result in an output file called ```functions.py``` that can be run to see the validity of the rule on a given signal. The supplementary file ```runSTLcheck.py``` is the file that will be called finally that acts as the main caller for the stl rule as a whole. ```data.py``` holds some arrays that act as the data used by the checks. 
 
+
+**Legacy Code**
 The extensive code from the grammar one version prior can be found in the file ```stl_expression.py``` and is going to be kept till that functionality has been ported over but the code is outdated as of today and will not work.

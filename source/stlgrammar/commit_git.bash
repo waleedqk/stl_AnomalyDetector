@@ -12,9 +12,7 @@ FILE_LIST=(
     CommonLexerRules.g4
     stlgrammar.g4
     all_expr.expr
-    expr_sample.expr
     stl.expr
-    stl_checks.expr
     main.py
     stlgrammarInterpreter.py
     grammarvisitor.py
@@ -25,5 +23,5 @@ FILE_LIST=(
 )
 
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
-git commit -m "Merged changes from stlTest into this single folder. Read the README.md section **Run the test code** to see how to run the code."
+git commit -m "Partial working commit of the new AST procedure to conver G and F into until formulas. Can test with singalComp rules only."
 git push origin master	
