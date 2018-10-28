@@ -13,8 +13,8 @@ stlFormula:
         | stlFormula andorOp stlFormula                 # stlConjDisjFormula
         | stlFormula 'U' timeSlice stlFormula           # stlUntilFormula
         | NOT '(' stlFormula ')'                        # stlNotFormula
-        | 'G' timeSlice? stlFormula                     # stlGlobalFormula
-        | 'F' timeSlice? stlFormula                     # stlEventualFormula
+        | 'G' timeSlice? '(' stlFormula ')'             # stlGlobalFormula
+        | 'F' timeSlice? '(' stlFormula ')'             # stlEventualFormula
         | signalComp                                    # stlSignalComp
         | signal                                        # stlSignal
         | Bool                                          # stlProp

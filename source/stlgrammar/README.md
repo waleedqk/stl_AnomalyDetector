@@ -62,11 +62,20 @@ See the visual parse tree
 
 **Run the test code**
 
-The code from the stlTest folder has just been ported over to this folder and the grammar has been updated as during the meeting discussions. 
+The code from the stlTest folder has just been ported over to this folder and the grammar has been updated as during the meeting discussions. The grammar file *.g4 already needs to be compiled using the instructions stated above. To generate code for a STL formula write it to a file and pass that along as an argument to ```main.py```. By default the file to be looked up is: ```stl.expr``` 
 
     python main.py stl.expr
 
-Will result in an output file called ```functions.py``` that can be run to see the validity of the rule on a given signal. The supplementary file ```runSTLcheck.py``` is the file that will be called finally that acts as the main caller for the stl rule as a whole. ```data.py``` holds some arrays that act as the data used by the checks. 
+Will result in an output file called ```functions.py``` that can be run to see the validity of the rule on a given signal. This includes all the function calls and code associated with the STL formula provided.
+
+The supplementary file ```runSTLcheck.py``` is the file that will be called finally that acts as the main caller for the stl rule as a whole. For now all it does is call the appropriate starter function and prints weather the STL formula was satisfied or not. 
+**Note:**: Should this be ported over to ```functions.py``` to reduce the number of generated files?
+
+```data.py``` holds some arrays that act as the data used by the checks. This is just a dummy placeholder that acts as data to check the formula on. This needs to be revisited in the future.
+
+Run the following to see if the STL rule was satisfied:
+
+    python runSTLcheck.py
 
 
 **Legacy Code**

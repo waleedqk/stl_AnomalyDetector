@@ -23,5 +23,5 @@ FILE_LIST=(
 )
 
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
-git commit -m "Partial working commit of the new AST procedure to conver G and F into until formulas. Can test with singalComp rules only."
+git commit -m "Full working STL code generater. Will need to be reviewed and tested to confirm validaty."
 git push origin master	

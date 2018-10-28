@@ -78,16 +78,26 @@ def check_spike():
 
     print("Spike settled: {}".format(check_fg))
 
+def for_check(t=0, start_t=3, end_t=7+1+1):
+
+    for i in range(t + start_t, t + end_t):
+        if (i>6):
+            break
+
+    print("{}".format(i))
+
 
 
 if __name__ == "__main__":
     print("Length of signal: {}".format(len(x)))
 
-    check_until()
+    # check_until()
+    #
+    # # z = [x if x % 2 else x * 100 for x in range(1, 10) ]
+    # print(x[0:10])
+    # z = all(i == 0 for i in x[0:10])
+    # print(z)
+    #
+    # check_spike()
 
-    # z = [x if x % 2 else x * 100 for x in range(1, 10) ]
-    print(x[0:10])
-    z = all(i == 0 for i in x[0:10])
-    print(z)
-
-    check_spike()
+    for_check()

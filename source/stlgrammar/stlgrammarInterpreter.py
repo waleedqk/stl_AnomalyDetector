@@ -109,6 +109,97 @@ class stlgrammarInterpreter(stlgrammarListener):
         '''
         self.uids[ctx] = value
 
+    def funcUIDgen(self, func_prepend="_"):
+        '''
+        Generate the unique ID and the function call that will use this UID for nodes
+        :param func_prepend: The function constant that will prepend the unique ID
+        :return:
+        '''
+
+        # get unique ID 
+        uid = str(self.getUniqueId()).strip()
+
+        # the function call that will be used with this UID
+        func_call = func_prepend.strip() + uid.strip()
+
+        return (uid, func_call)
+
+    def signalComp_boolCode(self, func_call="_", signal="x", relOp="==", boolVal="True"):
+        '''
+        generate code that is associated with a signalBool expr:  a == True, (False != a)
+
+        '''
+        code = "\n"
+        code += "\n\ndef " + str(func_call) + "(t=0):"
+        code += "\n\tif({}[t] {} {}):".format(signal, relOp, boolVal)
+        code += "\n\t\treturn True"
+        code += "\n\telse:"
+        code += "\n\t\treturn False"
+
+        return code
+
+    def signalComp_exprCode(self, func_call="_", signal="x", relOp="==", expr="0"):
+        '''
+        generate code that is associated with a signalExpr expr:  a < 54, ((4/63) < a)
+
+        '''
+        code = "\n"
+        code += "\n\ndef " + str(func_call) + "(t=0):"
+        code += "\n\tif({}[t] {} {}):".format(signal, relOp, expr)
+        code += "\n\t\treturn True"
+        code += "\n\telse:"
+        code += "\n\t\treturn False"
+
+        return code
+
+    def stlProp_code(self, func_call="_", boolVal="True"):
+        '''
+        generate code that is associated with an stlProp formula: True, False
+        '''
+        
+        code = "\n"
+        code += "\n\ndef " + func_call + "(t=0):"
+        code += "\n\tif({} == True):".format(boolVal)
+        code += "\n\t\treturn True"
+        code += "\n\telse:"
+        code += "\n\t\treturn False"
+
+        return code
+
+
+
+    def stlNotFormula_code(self, func_call="_", func_check="_"):
+        '''
+        generate code that is associated with an stlProp formula: True, False
+        '''        
+        code = "\n"
+        code += "\n\ndef " + str(func_call) + "(t=0):"
+        code += "\n\tif( not( {}(t=t) )):".format(func_check)
+        code += "\n\t\treturn True"
+        code += "\n\telse:"
+        code += "\n\t\treturn False"
+
+        return code
+
+
+    def stlUntilFormula_code(self, func_call="_", start_t="0", end_t="0", phi="_", phe="_"):
+        '''
+        generate code that is associated with a Until formula: x > 9 U [10, 15] y > 25
+        '''
+        code = "\n"
+        code += "\n\ndef " + str(func_call) + "(t=0):"            # "(t=0, start_t={}, end_t={}):".format(start_t, end_t)
+        code += "\n\tfor i in range(t+{}, t+{}+1+1):".format(start_t, end_t)
+        code += "\n\t\tif ({}(t=i)):".format(phe)
+        code += "\n\t\t\tbreak"
+        code += "\n\tif (i > (t + {})):".format(end_t)
+        code += "\n\t\treturn False"
+        code += "\n\tfor j in range(t,i):"
+        code += "\n\t\tif(not ({}(t=j))):".format(phi)
+        code += "\n\t\t\treturn False"
+        code += "\n\treturn True"
+
+        return code
+
     # Enter a parse tree produced by stlgrammarParser#prog.
     def enterProg(self, ctx:stlgrammarParser.ProgContext):
         '''
@@ -121,11 +212,16 @@ class stlgrammarInterpreter(stlgrammarListener):
 
     # Exit a parse tree produced by stlgrammarParser#prog.
     def exitProg(self, ctx:stlgrammarParser.ProgContext):
+        '''
 
+        :param ctx:
+        :param value: 
+        :return:
+        '''
         first_call = self.getExpr(ctx.stlFormula())
         # print("first_call: {}".format(first_call))
 
-        code = "\n\tstl_rule = " + first_call
+        code = "\n\tstl_rule = " + first_call + "(t=0)"
         code += "\n\tprint('STL rule was satisfied: {}'.format(stl_rule))"
 
         self.appendCode("runSTLcheck.py", code)
@@ -135,9 +231,162 @@ class stlgrammarInterpreter(stlgrammarListener):
         stdout=subprocess.PIPE)
         (stdoutdata, stderrdata) = proc.communicate()
 
+    # Enter a parse tree produced by stlgrammarParser#stlGlobalFormula.
+    def enterStlGlobalFormula(self, ctx:stlgrammarParser.StlGlobalFormulaContext):
+        '''
+        G[3,4](a > 25)
+        :param ctx:
+        :param value: 
+        :return:
+        '''
+
+        # get unique ID and the function call that will use this UID for this node
+        uid, func_call = self.funcUIDgen(func_prepend="StlGlobal_")
+
+        # annotate the node with the variables
+        self.setUID(ctx, {"uid": uid, "func": func_call})
+
+        # signal calls will only be referred to with their appointed function calls 
+        self.setExpr(ctx, func_call)
+
+
+
+    # Exit a parse tree produced by stlgrammarParser#stlGlobalFormula.
+    def exitStlGlobalFormula(self, ctx:stlgrammarParser.StlGlobalFormulaContext):
+        '''
+        G[3,4](a > 25)
+        :param ctx:
+        :param value: 
+        :return:
+        '''
+        timeRange = (ctx.timeSlice() != None)
+        if timeRange:
+            start_t = ctx.timeSlice().start_t().getText().strip()
+            end_t = ctx.timeSlice().end_t().getText().strip()
+        else:
+            start_t = 0
+            end_t = self.time_max
+        # print("start: {} \t end: {}".format(start_t, end_t))
+
+        stlFormula = self.getExpr(ctx.stlFormula())
+
+        # get the function call for this node: StlGlobal_930
+        func_call = self.getUID(ctx)["func"]
+
+
+
+
+        boolVal = "True"
+        # get unique ID and the function call that will use this UID for this node
+        uid_bool, func_call_bool = self.funcUIDgen(func_prepend="stlProp_")
+        # stlProp formula function code generation
+        code = self.stlProp_code(func_call=func_call_bool, boolVal=boolVal)
+        # append code to file
+        self.appendCode("functions.py", code)
+
+        # get unique ID and the function call that will use this UID for this node
+        uid_stlNot, func_call_stlNot = self.funcUIDgen(func_prepend="StlNot_")
+        # stlNotFormula formula function code generation
+        code = self.stlNotFormula_code(func_call=func_call_stlNot, func_check=stlFormula)
+        # append code to file
+        self.appendCode("functions.py", code)
+
+
+        # get unique ID and the function call that will use this UID for this node
+        uid_until, func_call_until = self.funcUIDgen(func_prepend="StlUntil_")
+
+        code = self.stlUntilFormula_code(func_call=func_call_until, start_t=start_t, end_t=end_t, phi=func_call_bool, phe=func_call_stlNot)
+        # append code to file
+        self.appendCode("functions.py", code)
+
+
+
+        code = "\n"
+        code += "\n\ndef " + str(func_call) + "(t=0):"
+        # code += "\n\tif(not( True U [3,4] not({}) ) ):".format(stlFormula)
+        code += "\n\tif(not( {}(t=t)) ):".format(func_call_until)
+        code += "\n\t\treturn True"
+        code += "\n\telse:"
+        code += "\n\t\treturn False"
+
+        self.appendCode("functions.py", code)
+
+
+    # Enter a parse tree produced by stlgrammarParser#stlEventualFormula.
+    def enterStlEventualFormula(self, ctx:stlgrammarParser.StlEventualFormulaContext):
+        '''
+        F[5,6]((4/63) < b)
+        :param ctx:
+        :param value: 
+        :return:
+        '''
+
+        # get unique ID and the function call that will use this UID for this node
+        uid, func_call = self.funcUIDgen(func_prepend="StlEventual_")
+
+        # annotate the node with the variables
+        self.setUID(ctx, {"uid": uid, "func": func_call})
+
+        # signal calls will only be referred to with their appointed function calls 
+        self.setExpr(ctx, func_call)
+
+
+    # Exit a parse tree produced by stlgrammarParser#stlEventualFormula.
+    def exitStlEventualFormula(self, ctx:stlgrammarParser.StlEventualFormulaContext):
+        '''
+        F[5,6]((4/63) < b)
+        :param ctx:
+        :param value: 
+        :return:
+        '''
+        timeRange = (ctx.timeSlice() != None)
+        if timeRange:
+            start_t = ctx.timeSlice().start_t().getText().strip()
+            end_t = ctx.timeSlice().end_t().getText().strip()
+        else:
+            start_t = 0
+            end_t = self.time_max
+        # print("start: {} \t end: {}".format(start_t, end_t))
+
+        stlFormula = self.getExpr(ctx.stlFormula())
+
+        # get the function call for this node: signalComp_611
+        func_call = self.getUID(ctx)["func"]
+
+
+        boolVal = "True"
+        # get unique ID and the function call that will use this UID for this node
+        uid_bool, func_call_bool = self.funcUIDgen(func_prepend="stlProp_")
+        # stlProp formula function code generation
+        code = self.stlProp_code(func_call=func_call_bool, boolVal=boolVal)
+        # append code to file
+        self.appendCode("functions.py", code)
+
+        # get unique ID and the function call that will use this UID for this node
+        uid_until, func_call_until = self.funcUIDgen(func_prepend="StlUntil_")
+
+        code = self.stlUntilFormula_code(func_call=func_call_until, start_t=start_t, end_t=end_t, phi=func_call_bool, phe=stlFormula)
+        # append code to file
+        self.appendCode("functions.py", code)
+
+        code = "\n"
+        code += "\n\ndef " + str(func_call) + "(t=0):"
+        code += "\n\tif({}(t=t)):".format(func_call_until)
+        code += "\n\t\treturn True"
+        code += "\n\telse:"
+        code += "\n\t\treturn False"
+
+        self.appendCode("functions.py", code)
+
 
     # Exit a parse tree produced by stlgrammarParser#stlSignalComp.
     def exitStlSignalComp(self, ctx:stlgrammarParser.StlSignalCompContext):
+        '''
+
+        :param ctx:
+        :param value: 
+        :return:
+        '''
 
         # Get the name of the function associated with the call
         signalComp = self.setExpr(ctx, self.getExpr(ctx.getChild(0)))
@@ -154,26 +403,60 @@ class stlgrammarInterpreter(stlgrammarListener):
         signal = ctx.signal().getText().strip().replace("(","").replace(")","")
         print("signal: {}".format(signal))
 
-        # get unique ID for this node
-        uid = str(self.getUniqueId())
-
-        # the function call that will use this UID
-        func_call = "StlSignal_" + uid
+        # get unique ID and the function call that will use this UID for this node
+        uid, func_call = self.funcUIDgen(func_prepend="StlSignal_")
 
         # annotate the node with the variables
         self.setUID(ctx, {"uid": uid, "func": func_call})
 
         # signal calls will only be referred to with their appointed function calls 
-        self.setExpr(ctx, func_call+"(t={})")
+        self.setExpr(ctx, func_call)
 
         code = "\n"
-        code += "\n\ndef " + func_call + "():"
+        code += "\n\ndef " + func_call + "(t=0):"
         code += "\n\tif({}[t] == True):".format(signal)
         code += "\n\t\treturn True"
         code += "\n\telse:"
         code += "\n\t\treturn False"
 
         self.appendCode("functions.py", code)
+
+    # Enter a parse tree produced by stlgrammarParser#stlUntilFormula.
+    def enterStlUntilFormula(self, ctx:stlgrammarParser.StlUntilFormulaContext):
+        '''
+
+        '''
+
+        # get unique ID and the function call that will use this UID for this node
+        uid, func_call = self.funcUIDgen(func_prepend="StlUntil_")
+
+        # annotate the node with the variables
+        self.setUID(ctx, {"uid": uid, "func": func_call})
+
+        # signal calls will only be referred to with their appointed function calls 
+        self.setExpr(ctx, func_call)
+
+
+    # Exit a parse tree produced by stlgrammarParser#stlUntilFormula.
+    def exitStlUntilFormula(self, ctx:stlgrammarParser.StlUntilFormulaContext):
+        '''
+        
+        '''
+
+        start_t = ctx.timeSlice().start_t().getText().strip()
+        end_t = ctx.timeSlice().end_t().getText().strip()
+        # print("start: {} \t end: {}".format(start_t, end_t))
+
+        stlFormula_phi = self.getExpr(ctx.stlFormula(0))
+        stlFormula_phe = self.getExpr(ctx.stlFormula(1))
+
+        # get the function call for this node: StlUntil_611
+        func_call = self.getUID(ctx)["func"]
+
+        code = self.stlUntilFormula_code(func_call=func_call, start_t=start_t, end_t=end_t, phi=stlFormula_phi, phe=stlFormula_phe)
+
+        self.appendCode("functions.py", code)
+
 
 
     # Enter a parse tree produced by stlgrammarParser#stlProp.
@@ -186,21 +469,59 @@ class stlgrammarInterpreter(stlgrammarListener):
 
         boolVal = ctx.Bool().getText().strip().replace("(","").replace(")","")
 
-        # get unique ID for this node
-        uid = str(self.getUniqueId())
-
-        # the function call that will use this UID
-        func_call = "stlProp_" + uid
+        # get unique ID and the function call that will use this UID for this node
+        uid, func_call = self.funcUIDgen(func_prepend="stlProp_")
 
         # annotate the node with the variables
         self.setUID(ctx, {"uid": uid, "func": func_call})
 
         # signal calls will only be referred to with their appointed function calls 
-        self.setExpr(ctx, func_call+"()")
+        self.setExpr(ctx, func_call)
+
+        code = self.stlProp_code(func_call=func_call, boolVal=boolVal)
+
+        self.appendCode("functions.py", code)
+
+    # Enter a parse tree produced by stlgrammarParser#stlConjDisjFormula.
+    def enterStlConjDisjFormula(self, ctx:stlgrammarParser.StlConjDisjFormulaContext):
+        '''
+        (F[5,6]((4/63) < b)) and G[3,4](a > 25)
+        :param ctx:
+        :param value: 
+        :return:
+        '''
+
+        # get unique ID and the function call that will use this UID for this node
+        uid, func_call = self.funcUIDgen(func_prepend="StlConjDisj_")
+
+        # annotate the node with the variables
+        self.setUID(ctx, {"uid": uid, "func": func_call})
+
+        # signal calls will only be referred to with their appointed function calls 
+        self.setExpr(ctx, func_call)
+
+
+    # Exit a parse tree produced by stlgrammarParser#stlConjDisjFormula.
+    def exitStlConjDisjFormula(self, ctx:stlgrammarParser.StlConjDisjFormulaContext):
+        '''
+        (F[5,6]((4/63) < b)) and G[3,4](a > 25)
+        :param ctx:
+        :param value: 
+        :return:
+        '''
+        before = self.getExpr(ctx.stlFormula(0))
+        andorOp = self.getExpr(ctx.andorOp())
+        after = self.getExpr(ctx.stlFormula(1))
+
+        conjdisjFormula = "({}(t=t) {} {}(t=t))".format(before, andorOp, after)
+        # print(conjdisjFormula)
+
+        # get the function call for this node: signalComp_611
+        func_call = self.getUID(ctx)["func"]
 
         code = "\n"
-        code += "\n\ndef " + func_call + "():"
-        code += "\n\tif({} == True):".format(boolVal)
+        code += "\n\ndef " + str(func_call) + "(t=0):"
+        code += "\n\tif({} == True):".format(conjdisjFormula)
         code += "\n\t\treturn True"
         code += "\n\telse:"
         code += "\n\t\treturn False"
@@ -208,9 +529,97 @@ class stlgrammarInterpreter(stlgrammarListener):
         self.appendCode("functions.py", code)
 
 
+    # Enter a parse tree produced by stlgrammarParser#stlFormulaImplies.
+    def enterStlFormulaImplies(self, ctx:stlgrammarParser.StlFormulaImpliesContext):
+        '''
+        F[5,6](4/63 < b) -> G[3,4](a > 25)
+        :param ctx:
+        :param value: 
+        :return:
+        '''
+
+        # get unique ID and the function call that will use this UID for this node
+        uid, func_call = self.funcUIDgen(func_prepend="StlFormulaImplies_")
+
+        # annotate the node with the variables
+        self.setUID(ctx, {"uid": uid, "func": func_call})
+
+        # signal calls will only be referred to with their appointed function calls 
+        self.setExpr(ctx, func_call)
+
+
+    # Exit a parse tree produced by stlgrammarParser#stlFormulaImplies.
+    def exitStlFormulaImplies(self, ctx:stlgrammarParser.StlFormulaImpliesContext):
+        '''
+        (F[5,6]((4/63) < b)) and G[3,4](a > 25)
+        :param ctx:
+        :param value: 
+        :return:
+        '''
+        before = self.getExpr(ctx.stlFormula(0))
+        after = self.getExpr(ctx.stlFormula(1))
+
+        conjdisjFormula = "((not ({}(t=t))) or ({}(t=t) and {}(t=t)))".format(before, before, after)
+        # print(conjdisjFormula)
+
+        # get the function call for this node: signalComp_611
+        func_call = self.getUID(ctx)["func"]
+
+        code = "\n"
+        code += "\n\ndef " + str(func_call) + "(t=0):"
+        code += "\n\tif({} == True):".format(conjdisjFormula)
+        code += "\n\t\treturn True"
+        code += "\n\telse:"
+        code += "\n\t\treturn False"
+
+        self.appendCode("functions.py", code)
+
+
+    # Enter a parse tree produced by stlgrammarParser#stlNotFormula.
+    def enterStlNotFormula(self, ctx:stlgrammarParser.StlNotFormulaContext):
+        '''
+
+        :param ctx:
+        :param value: 
+        :return:
+        '''
+
+        # get unique ID and the function call that will use this UID for this node
+        uid, func_call = self.funcUIDgen(func_prepend="StlNot_")
+
+        # annotate the node with the variables
+        self.setUID(ctx, {"uid": uid, "func": func_call})
+
+        # signal calls will only be referred to with their appointed function calls 
+        self.setExpr(ctx, func_call)
+
+
+    # Exit a parse tree produced by stlgrammarParser#stlNotFormula.
+    def exitStlNotFormula(self, ctx:stlgrammarParser.StlNotFormulaContext):
+        '''
+
+        :param ctx:
+        :param value: 
+        :return:
+        '''
+        stlFormula = self.getExpr(ctx.stlFormula())
+
+        # get the function call for this node: signalComp_611
+        func_call = self.getUID(ctx)["func"]
+
+        code = self.stlNotFormula_code(func_call=func_call, func_check=stlFormula)
+
+        self.appendCode("functions.py", code)
+
     # Exit a parse tree produced by stlgrammarParser#stlParens.
     def exitStlParens(self, ctx:stlgrammarParser.StlParensContext):
-        
+        '''
+
+        :param ctx:
+        :param value: 
+        :return:
+        '''
+
         stlFormula = self.getExpr(ctx.stlFormula())
         # print("stlFormula: {}".format(stlFormula))
 
@@ -223,17 +632,15 @@ class stlgrammarInterpreter(stlgrammarListener):
         :param ctx:
         :return:
         '''
-        # get unique ID for this node
-        uid = str(self.getUniqueId())
 
-        # the function call that will use this UID
-        func_call = "signalComp_" + uid
+        # get unique ID and the function call that will use this UID for this node
+        uid, func_call = self.funcUIDgen(func_prepend="signalComp_")
 
         # annotate the node with the variables
         self.setUID(ctx, {"uid": uid, "func": func_call})
 
         # signal calls will only be referred to with their appointed function calls 
-        self.setExpr(ctx, func_call+"(t={})")
+        self.setExpr(ctx, func_call)
 
     # Exit a parse tree produced by stlgrammarParser#signalExpr.
     def exitSignalExpr(self, ctx:stlgrammarParser.SignalExprContext):
@@ -248,14 +655,10 @@ class stlgrammarInterpreter(stlgrammarListener):
         expr = self.getExpr(ctx.expr())
 
         # get the function call for this node: signalComp_611
-        func_call = self.getUID(ctx)["func"] + "(t=t)"
+        func_call = self.getUID(ctx)["func"]
 
-        code = "\n"
-        code += "\n\ndef " + str(self.getUID(ctx)["func"]) + "(t):"
-        code += "\n\tif({}[t] {} {}):".format(signal, relOp, expr)
-        code += "\n\t\treturn True"
-        code += "\n\telse:"
-        code += "\n\t\treturn False"
+        # generate code that is associated with a signalBool expr:  a == True, (False != a)
+        code = self.signalComp_exprCode(func_call=func_call, signal=signal, relOp=relOp, expr=expr)
 
         self.appendCode("functions.py", code)
 
@@ -266,17 +669,15 @@ class stlgrammarInterpreter(stlgrammarListener):
         :param ctx:
         :return:
         '''
-        # get unique ID for this node
-        uid = str(self.getUniqueId())
 
-        # the function call that will use this UID
-        func_call = "signalComp_" + uid
+        # get unique ID and the function call that will use this UID for this node
+        uid, func_call = self.funcUIDgen(func_prepend="signalComp_")
 
         # annotate the node with the variables
         self.setUID(ctx, {"uid": uid, "func": func_call})
 
         # signal calls will only be referred to with their appointed function calls 
-        self.setExpr(ctx, func_call+"(t={})")
+        self.setExpr(ctx, func_call)
 
     # Exit a parse tree produced by stlgrammarParser#signalBool.
     def exitSignalBool(self, ctx:stlgrammarParser.SignalBoolContext):
@@ -293,14 +694,10 @@ class stlgrammarInterpreter(stlgrammarListener):
         # print("SignalBool: {}".format(self.getExpr(ctx)))
 
         # get the function call for this node: signalComp_611
-        func_call = self.getUID(ctx)["func"] + "(t=t)"
+        func_call = self.getUID(ctx)["func"]
 
-        code = "\n"
-        code += "\n\ndef " + str(self.getUID(ctx)["func"]) + "(t):"
-        code += "\n\tif({}[t] {} {}):".format(signal, relOp, boolVal)
-        code += "\n\t\treturn True"
-        code += "\n\telse:"
-        code += "\n\t\treturn False"
+        # generate code that is associated with a signalBool expr:  a == True, (False != a)
+        code = self.signalComp_boolCode(func_call=func_call, signal=signal, relOp=relOp, boolVal=boolVal)
 
         self.appendCode("functions.py", code)
 
@@ -389,3 +786,13 @@ class stlgrammarInterpreter(stlgrammarListener):
         # print(expr)
 
         self.setExpr(ctx, expr) 
+
+    # Exit a parse tree produced by stlgrammarParser#andorOp.
+    def exitAndorOp(self, ctx:stlgrammarParser.AndorOpContext):
+        '''
+
+        :param ctx:
+        :return:
+        '''
+        andor = ctx.getText().strip()
+        self.setExpr(ctx, andor)
