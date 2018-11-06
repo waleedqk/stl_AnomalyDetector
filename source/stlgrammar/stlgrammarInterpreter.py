@@ -39,7 +39,7 @@ class stlgrammarInterpreter(stlgrammarListener):
         '''
         The maximum time range that can be put to a STL rule
         '''
-        self.time_max = 1000
+        self.time_max = 20
 
         '''
         Index for beginning of all type of stl rules 

@@ -23,5 +23,5 @@ FILE_LIST=(
 )
 
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
-git commit -m "Full working STL code generater. Commit before meeting with Sebastian on 06 Nov 2018 10 AM."
+git commit -m "Full working STL code generater. Commit after meeting with Sebastian on 06 Nov 2018 10 AM. See meeting notes for details."
 git push origin master	
