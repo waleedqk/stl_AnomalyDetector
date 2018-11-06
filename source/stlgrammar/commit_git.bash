@@ -23,5 +23,5 @@ FILE_LIST=(
 )
 
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
-git commit -m "Full working STL code generater. Will need to be reviewed and tested to confirm validaty."
+git commit -m "Full working STL code generater. Will need to be reviewed and tested to confirm validaty. Prints STL rule before running the checker."
 git push origin master	

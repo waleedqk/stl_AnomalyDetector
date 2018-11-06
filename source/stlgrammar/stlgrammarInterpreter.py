@@ -10,6 +10,11 @@ class stlgrammarInterpreter(stlgrammarListener):
     def __init__(self):
 
         '''
+        The STL rule stored as a string value
+        '''
+        self.stlString = ""
+
+        '''
         The code that is being generated is appended to the string
         '''
         self.code = ""
@@ -207,7 +212,7 @@ class stlgrammarInterpreter(stlgrammarListener):
         :param ctx:
         :return:
         '''
-        pass
+        self.stlString = ctx.stlFormula().getText().strip()
 
 
     # Exit a parse tree produced by stlgrammarParser#prog.
@@ -222,6 +227,7 @@ class stlgrammarInterpreter(stlgrammarListener):
         # print("first_call: {}".format(first_call))
 
         code = "\n\tstl_rule = " + first_call + "(t=0)"
+        code += "\n\tprint('Checking STL rule: {}')".format(self.stlString)
         code += "\n\tprint('STL rule was satisfied: {}'.format(stl_rule))"
 
         self.appendCode("runSTLcheck.py", code)
