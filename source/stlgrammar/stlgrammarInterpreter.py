@@ -1,6 +1,8 @@
 import os
 import subprocess
 import random
+import numpy as np 
+import pandas as pd 
 import antlr4
 from stlgrammarLexer import stlgrammarLexer
 from stlgrammarParser import stlgrammarParser
@@ -42,18 +44,28 @@ class stlgrammarInterpreter(stlgrammarListener):
         self.time_max = 20
 
         '''
-        Index for beginning of all type of stl rules 
+        A pandas dataframe that will hold all the coluns that will used for analysis
+        Here it will create the dataframe and populate it with 0's
+        The values will be update when the rule check code is run
         '''
-        # self.ruleBegin = [stlgrammarParser.RULE_globallyeventuallyCall, stlgrammarParser.RULE_eventuallygloballyCall, stlgrammarParser.RULE_globallyCall, stlgrammarParser.RULE_eventuallyCall]
+        self.df = pd.DataFrame(data=np.arange(self.time_max), columns=['Time'])
+
+        '''
+        A dictionary:
+        key: the function name
+        value: the expression that is being processind in the function
+        '''
+        self.signal_dict = {}
 
         with open("runSTLcheck.py", "w") as code_output:
-            code_output.write("\nfrom data import *")
+            # code_output.write("\nfrom data import *")
             code_output.write("\nimport os, sys, random")
-            code_output.write("\n\nfrom functions import *")
-            code_output.write("\n\nif __name__ == '__main__':")
-
-        with open("functions.py", "w") as code_output:
+            code_output.write("\nimport numpy as np")
+            code_output.write("\nimport pandas as pd")
             code_output.write("\nfrom data import *")
+            code_output.write("\n\n")
+
+            code_output.write("df = pd.read_csv('dataframe_default.csv', sep=',')")
 
     def appendCode(self, file, code):
         '''
@@ -132,27 +144,21 @@ class stlgrammarInterpreter(stlgrammarListener):
     def signalComp_boolCode(self, func_call="_", signal="x", relOp="==", boolVal="True"):
         '''
         generate code that is associated with a signalBool expr:  a == True, (False != a)
-
         '''
+
+        # initialize the function call to be all 0's in the dataframe
+        self.df[func_call] = 0
+
+        # update the signal dictionary with the function call and expression string
+        self.signal_dict[func_call] = "{}[t] {} {}".format(signal, relOp, boolVal)
+
         code = "\n"
         code += "\n\ndef " + str(func_call) + "(t=0):"
         code += "\n\tif({}[t] {} {}):".format(signal, relOp, boolVal)
+        code += "\n\t\tdf.loc[df.Time == t, '{}'] = 1".format(func_call)
         code += "\n\t\treturn True"
         code += "\n\telse:"
-        code += "\n\t\treturn False"
-
-        return code
-
-    def signalComp_exprCode(self, func_call="_", signal="x", relOp="==", expr="0"):
-        '''
-        generate code that is associated with a signalExpr expr:  a < 54, ((4/63) < a)
-
-        '''
-        code = "\n"
-        code += "\n\ndef " + str(func_call) + "(t=0):"
-        code += "\n\tif({}[t] {} {}):".format(signal, relOp, expr)
-        code += "\n\t\treturn True"
-        code += "\n\telse:"
+        code += "\n\t\tdf.loc[df.Time == t, '{}'] = -1".format(func_call)
         code += "\n\t\treturn False"
 
         return code
@@ -162,15 +168,45 @@ class stlgrammarInterpreter(stlgrammarListener):
         generate code that is associated with an stlProp formula: True, False
         '''
         
+        # initialize the function call to be all 0's in the dataframe
+        self.df[func_call] = 0
+
+        # update the signal dictionary with the function call and expression string
+        self.signal_dict[func_call] = "{} == True".format(boolVal)
+
         code = "\n"
         code += "\n\ndef " + func_call + "(t=0):"
         code += "\n\tif({} == True):".format(boolVal)
+        code += "\n\t\tdf.loc[df.Time == t, '{}'] = 1".format(func_call)
         code += "\n\t\treturn True"
         code += "\n\telse:"
+        code += "\n\t\tdf.loc[df.Time == t, '{}'] = -1".format(func_call)
         code += "\n\t\treturn False"
 
         return code
 
+    def signalComp_exprCode(self, func_call="_", signal="x", relOp="==", expr="0"):
+    # def signalComp_exprCode(self, func_call="_", expr="x[t] == 0"):
+        '''
+        generate code that is associated with a signalExpr expr:  a < 54, ((4/63) < a)
+        '''
+
+        # initialize the function call to be all 0's in the dataframe
+        self.df[func_call] = 0
+
+        # update the signal dictionary with the function call and expression string
+        self.signal_dict[func_call] = "{}[t] {} {}".format(signal, relOp, expr)
+
+        code = "\n"
+        code += "\n\ndef " + str(func_call) + "(t=0):"
+        code += "\n\tif({}[t] {} {}):".format(signal, relOp, expr)
+        code += "\n\t\tdf.loc[df.Time == t, '{}'] = 1".format(func_call)
+        code += "\n\t\treturn True"
+        code += "\n\telse:"
+        code += "\n\t\tdf.loc[df.Time == t, '{}'] = -1".format(func_call)
+        code += "\n\t\treturn False"
+
+        return code
 
 
     def stlNotFormula_code(self, func_call="_", func_check="_"):
@@ -226,16 +262,24 @@ class stlgrammarInterpreter(stlgrammarListener):
         first_call = self.getExpr(ctx.stlFormula())
         # print("first_call: {}".format(first_call))
 
-        code = "\n\tstl_rule = " + first_call + "(t=0)"
+        code = "\n\nif __name__ == '__main__':"
+        code += "\n\tstl_rule = " + first_call + "(t=0)"
         code += "\n\tprint('Checking STL rule: {}')".format(self.stlString)
         code += "\n\tprint('STL rule was satisfied: {}'.format(stl_rule))"
+        code += "\n\tdf.to_csv('dataframe_populated.csv', sep=',', index=False)"
 
         self.appendCode("runSTLcheck.py", code)
 
         proc = subprocess.Popen(
-        ['chmod', '+x', 'functions.py', 'runSTLcheck.py'],
+        ['chmod', '+x', 'runSTLcheck.py'],
         stdout=subprocess.PIPE)
         (stdoutdata, stderrdata) = proc.communicate()
+
+        # Store the dataframe to a csv
+        self.df.to_csv("dataframe_default.csv", sep=",", index=False)
+
+        # save the signal_dict to a file
+        np.save('signal_dict.npy', self.signal_dict)
 
     # Enter a parse tree produced by stlgrammarParser#stlGlobalFormula.
     def enterStlGlobalFormula(self, ctx:stlgrammarParser.StlGlobalFormulaContext):
@@ -279,23 +323,20 @@ class stlgrammarInterpreter(stlgrammarListener):
         # get the function call for this node: StlGlobal_930
         func_call = self.getUID(ctx)["func"]
 
-
-
-
         boolVal = "True"
         # get unique ID and the function call that will use this UID for this node
         uid_bool, func_call_bool = self.funcUIDgen(func_prepend="stlProp_")
         # stlProp formula function code generation
         code = self.stlProp_code(func_call=func_call_bool, boolVal=boolVal)
         # append code to file
-        self.appendCode("functions.py", code)
+        self.appendCode("runSTLcheck.py", code)
 
         # get unique ID and the function call that will use this UID for this node
         uid_stlNot, func_call_stlNot = self.funcUIDgen(func_prepend="StlNot_")
         # stlNotFormula formula function code generation
         code = self.stlNotFormula_code(func_call=func_call_stlNot, func_check=stlFormula)
         # append code to file
-        self.appendCode("functions.py", code)
+        self.appendCode("runSTLcheck.py", code)
 
 
         # get unique ID and the function call that will use this UID for this node
@@ -303,9 +344,7 @@ class stlgrammarInterpreter(stlgrammarListener):
 
         code = self.stlUntilFormula_code(func_call=func_call_until, start_t=start_t, end_t=end_t, phi=func_call_bool, phe=func_call_stlNot)
         # append code to file
-        self.appendCode("functions.py", code)
-
-
+        self.appendCode("runSTLcheck.py", code)
 
         code = "\n"
         code += "\n\ndef " + str(func_call) + "(t=0):"
@@ -315,7 +354,7 @@ class stlgrammarInterpreter(stlgrammarListener):
         code += "\n\telse:"
         code += "\n\t\treturn False"
 
-        self.appendCode("functions.py", code)
+        self.appendCode("runSTLcheck.py", code)
 
 
     # Enter a parse tree produced by stlgrammarParser#stlEventualFormula.
@@ -366,14 +405,14 @@ class stlgrammarInterpreter(stlgrammarListener):
         # stlProp formula function code generation
         code = self.stlProp_code(func_call=func_call_bool, boolVal=boolVal)
         # append code to file
-        self.appendCode("functions.py", code)
+        self.appendCode("runSTLcheck.py", code)
 
         # get unique ID and the function call that will use this UID for this node
         uid_until, func_call_until = self.funcUIDgen(func_prepend="StlUntil_")
 
         code = self.stlUntilFormula_code(func_call=func_call_until, start_t=start_t, end_t=end_t, phi=func_call_bool, phe=stlFormula)
         # append code to file
-        self.appendCode("functions.py", code)
+        self.appendCode("runSTLcheck.py", code)
 
         code = "\n"
         code += "\n\ndef " + str(func_call) + "(t=0):"
@@ -382,7 +421,7 @@ class stlgrammarInterpreter(stlgrammarListener):
         code += "\n\telse:"
         code += "\n\t\treturn False"
 
-        self.appendCode("functions.py", code)
+        self.appendCode("runSTLcheck.py", code)
 
 
     # Exit a parse tree produced by stlgrammarParser#stlSignalComp.
@@ -402,7 +441,7 @@ class stlgrammarInterpreter(stlgrammarListener):
     # Enter a parse tree produced by stlgrammarParser#stlSignal.
     def enterStlSignal(self, ctx:stlgrammarParser.StlSignalContext):
         '''
-        Getting a single signal value as a formula: x
+        Getting a single signal value as a formula: x | x[t]
         :param ctx:
         :return:
         '''
@@ -418,14 +457,23 @@ class stlgrammarInterpreter(stlgrammarListener):
         # signal calls will only be referred to with their appointed function calls 
         self.setExpr(ctx, func_call)
 
+        # initialize the function call to be all 0's in the dataframe
+        self.df[func_call] = 0
+
+        # update the signal dictionary with the function call and expression string
+        self.signal_dict[func_call] = "{}[t] == True".format(signal)
+
         code = "\n"
         code += "\n\ndef " + func_call + "(t=0):"
         code += "\n\tif({}[t] == True):".format(signal)
+        code += "\n\t\tdf.loc[df.Time == t, '{}'] = 1".format(func_call)
         code += "\n\t\treturn True"
         code += "\n\telse:"
+        code += "\n\t\tdf.loc[df.Time == t, '{}'] = -1".format(func_call)
         code += "\n\t\treturn False"
 
-        self.appendCode("functions.py", code)
+        self.appendCode("runSTLcheck.py", code)
+
 
     # Enter a parse tree produced by stlgrammarParser#stlUntilFormula.
     def enterStlUntilFormula(self, ctx:stlgrammarParser.StlUntilFormulaContext):
@@ -461,7 +509,7 @@ class stlgrammarInterpreter(stlgrammarListener):
 
         code = self.stlUntilFormula_code(func_call=func_call, start_t=start_t, end_t=end_t, phi=stlFormula_phi, phe=stlFormula_phe)
 
-        self.appendCode("functions.py", code)
+        self.appendCode("runSTLcheck.py", code)
 
 
 
@@ -486,7 +534,7 @@ class stlgrammarInterpreter(stlgrammarListener):
 
         code = self.stlProp_code(func_call=func_call, boolVal=boolVal)
 
-        self.appendCode("functions.py", code)
+        self.appendCode("runSTLcheck.py", code)
 
     # Enter a parse tree produced by stlgrammarParser#stlConjDisjFormula.
     def enterStlConjDisjFormula(self, ctx:stlgrammarParser.StlConjDisjFormulaContext):
@@ -522,7 +570,7 @@ class stlgrammarInterpreter(stlgrammarListener):
         conjdisjFormula = "({}(t=t) {} {}(t=t))".format(before, andorOp, after)
         # print(conjdisjFormula)
 
-        # get the function call for this node: signalComp_611
+        # get the function call for this node: StlConjDisj_611
         func_call = self.getUID(ctx)["func"]
 
         code = "\n"
@@ -532,13 +580,13 @@ class stlgrammarInterpreter(stlgrammarListener):
         code += "\n\telse:"
         code += "\n\t\treturn False"
 
-        self.appendCode("functions.py", code)
+        self.appendCode("runSTLcheck.py", code)
 
 
     # Enter a parse tree produced by stlgrammarParser#stlFormulaImplies.
     def enterStlFormulaImplies(self, ctx:stlgrammarParser.StlFormulaImpliesContext):
         '''
-        F[5,6](4/63 < b) -> G[3,4](a > 25)
+        a -> b === (not(a)) or (a and b)
         :param ctx:
         :param value: 
         :return:
@@ -557,7 +605,7 @@ class stlgrammarInterpreter(stlgrammarListener):
     # Exit a parse tree produced by stlgrammarParser#stlFormulaImplies.
     def exitStlFormulaImplies(self, ctx:stlgrammarParser.StlFormulaImpliesContext):
         '''
-        (F[5,6]((4/63) < b)) and G[3,4](a > 25)
+        a -> b === (not(a)) or (a and b)
         :param ctx:
         :param value: 
         :return:
@@ -578,7 +626,7 @@ class stlgrammarInterpreter(stlgrammarListener):
         code += "\n\telse:"
         code += "\n\t\treturn False"
 
-        self.appendCode("functions.py", code)
+        self.appendCode("runSTLcheck.py", code)
 
 
     # Enter a parse tree produced by stlgrammarParser#stlNotFormula.
@@ -615,7 +663,7 @@ class stlgrammarInterpreter(stlgrammarListener):
 
         code = self.stlNotFormula_code(func_call=func_call, func_check=stlFormula)
 
-        self.appendCode("functions.py", code)
+        self.appendCode("runSTLcheck.py", code)
 
     # Exit a parse tree produced by stlgrammarParser#stlParens.
     def exitStlParens(self, ctx:stlgrammarParser.StlParensContext):
@@ -660,13 +708,42 @@ class stlgrammarInterpreter(stlgrammarListener):
         relOp = ctx.relOp().getText().strip()
         expr = self.getExpr(ctx.expr())
 
+        '''
+        the rule matches both  a > 5 && 5 < a, since the rule is: 
+        signal relOp expr                             # signalExpr
+        | expr relOp signal                           # signalExpr
+        
+        to change it to an the standard expression being used here need to find out which child is the expr child
+        It can either be the first or the last (0 or 2), so we start of with the only wrong value of 1
+        '''
+        expr_loc = 1
+        if (ctx.getChild(0).getRuleIndex() == stlgrammarParser.RULE_signal):
+            expr_loc = 0
+
+        if (ctx.getChild(2).getRuleIndex() == stlgrammarParser.RULE_signal):
+            expr_loc = 2
+
+        '''
+        if the expression is the second value, we will change the orientation to match the style of:
+        signal relOp expr 
+        '''
+        if (expr_loc == 2):
+            switchCase = {
+                '<': '>',
+                '>': '<',
+                '>=': '<=',
+                '<=': '>='
+            }
+            relOp = switchCase.get(relOp,"==")
+
+
         # get the function call for this node: signalComp_611
         func_call = self.getUID(ctx)["func"]
 
         # generate code that is associated with a signalBool expr:  a == True, (False != a)
         code = self.signalComp_exprCode(func_call=func_call, signal=signal, relOp=relOp, expr=expr)
 
-        self.appendCode("functions.py", code)
+        self.appendCode("runSTLcheck.py", code)
 
 
     # Enter a parse tree produced by stlgrammarParser#signalBool.
@@ -705,7 +782,7 @@ class stlgrammarInterpreter(stlgrammarListener):
         # generate code that is associated with a signalBool expr:  a == True, (False != a)
         code = self.signalComp_boolCode(func_call=func_call, signal=signal, relOp=relOp, boolVal=boolVal)
 
-        self.appendCode("functions.py", code)
+        self.appendCode("runSTLcheck.py", code)
 
     # Exit a parse tree produced by stlgrammarParser#signalName.
     def exitSignalName(self, ctx:stlgrammarParser.SignalNameContext):
