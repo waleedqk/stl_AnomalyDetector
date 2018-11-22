@@ -17,7 +17,7 @@ FILE_LIST=(
     main.py
     stlgrammarInterpreter.py
     stlgrammarInterpreter_plot.py
-    data.py
+    data.csv
 )
 
 LEGACY_FILES=(
@@ -29,5 +29,5 @@ LEGACY_FILES=(
 
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
 git add $SCRIPT_DIR/"${LEGACY_FILES[@]}"
-git commit -m "functions.py is removed from the system. dataframe csv files created to check the test run: stlgrammarInterpreter_plot.py"
+git commit -m "data.py replaced by data.csv. runSTLcheck now loads the data.csv for the signals. Access the value by index. Time plots now include implies and conjDisj. runme.bash runs the entire chain"
 git push origin master	

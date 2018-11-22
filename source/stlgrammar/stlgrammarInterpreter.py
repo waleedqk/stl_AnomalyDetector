@@ -58,11 +58,9 @@ class stlgrammarInterpreter(stlgrammarListener):
         self.signal_dict = {}
 
         with open("runSTLcheck.py", "w") as code_output:
-            # code_output.write("\nfrom data import *")
             code_output.write("\nimport os, sys, random")
             code_output.write("\nimport numpy as np")
             code_output.write("\nimport pandas as pd")
-            code_output.write("\nfrom data import *")
             code_output.write("\n\n")
 
             code_output.write("df = pd.read_csv('dataframe_default.csv', sep=',')")
@@ -154,29 +152,7 @@ class stlgrammarInterpreter(stlgrammarListener):
 
         code = "\n"
         code += "\n\ndef " + str(func_call) + "(t=0):"
-        code += "\n\tif({}[t] {} {}):".format(signal, relOp, boolVal)
-        code += "\n\t\tdf.loc[df.Time == t, '{}'] = 1".format(func_call)
-        code += "\n\t\treturn True"
-        code += "\n\telse:"
-        code += "\n\t\tdf.loc[df.Time == t, '{}'] = -1".format(func_call)
-        code += "\n\t\treturn False"
-
-        return code
-
-    def stlProp_code(self, func_call="_", boolVal="True"):
-        '''
-        generate code that is associated with an stlProp formula: True, False
-        '''
-        
-        # initialize the function call to be all 0's in the dataframe
-        self.df[func_call] = 0
-
-        # update the signal dictionary with the function call and expression string
-        self.signal_dict[func_call] = "{} == True".format(boolVal)
-
-        code = "\n"
-        code += "\n\ndef " + func_call + "(t=0):"
-        code += "\n\tif({} == True):".format(boolVal)
+        code += "\n\tif(data_df.loc[t,'{}'] {} {}):".format(signal, relOp, boolVal)
         code += "\n\t\tdf.loc[df.Time == t, '{}'] = 1".format(func_call)
         code += "\n\t\treturn True"
         code += "\n\telse:"
@@ -199,11 +175,34 @@ class stlgrammarInterpreter(stlgrammarListener):
 
         code = "\n"
         code += "\n\ndef " + str(func_call) + "(t=0):"
-        code += "\n\tif({}[t] {} {}):".format(signal, relOp, expr)
+        # code += "\n\tif({}[t] {} {}):".format(signal, relOp, expr)
+        code += "\n\tif(data_df.loc[t,'{}'] {} {}):".format(signal, relOp, expr)
         code += "\n\t\tdf.loc[df.Time == t, '{}'] = 1".format(func_call)
         code += "\n\t\treturn True"
         code += "\n\telse:"
         code += "\n\t\tdf.loc[df.Time == t, '{}'] = -1".format(func_call)
+        code += "\n\t\treturn False"
+
+        return code
+
+    def stlProp_code(self, func_call="_", boolVal="True"):
+        '''
+        generate code that is associated with an stlProp formula: True, False
+        '''
+        
+        # # initialize the function call to be all 0's in the dataframe
+        # self.df[func_call] = 0
+
+        # update the signal dictionary with the function call and expression string
+        self.signal_dict[func_call] = "{} == True".format(boolVal)
+
+        code = "\n"
+        code += "\n\ndef " + func_call + "(t=0):"
+        code += "\n\tif({} == True):".format(boolVal)
+        # code += "\n\t\tdf.loc[df.Time == t, '{}'] = 1".format(func_call)
+        code += "\n\t\treturn True"
+        code += "\n\telse:"
+        # code += "\n\t\tdf.loc[df.Time == t, '{}'] = -1".format(func_call)
         code += "\n\t\treturn False"
 
         return code
@@ -262,7 +261,12 @@ class stlgrammarInterpreter(stlgrammarListener):
         first_call = self.getExpr(ctx.stlFormula())
         # print("first_call: {}".format(first_call))
 
-        code = "\n\nif __name__ == '__main__':"
+        signal_list = ', '.join('"{0}"'.format(signal) for signal in self.signals)
+
+        code = ""
+        code += "\n\n\ndata_df = pd.read_csv('data.csv', sep=',', usecols=[{}])".format(signal_list)
+        code += "\ndata_df = data_df.reset_index(drop=True)"
+        code += "\n\nif __name__ == '__main__':"
         code += "\n\tstl_rule = " + first_call + "(t=0)"
         code += "\n\tprint('Checking STL rule: {}')".format(self.stlString)
         code += "\n\tprint('STL rule was satisfied: {}'.format(stl_rule))"
@@ -573,11 +577,19 @@ class stlgrammarInterpreter(stlgrammarListener):
         # get the function call for this node: StlConjDisj_611
         func_call = self.getUID(ctx)["func"]
 
+        # initialize the function call to be all 0's in the dataframe
+        self.df[func_call] = 0
+
+        # update the signal dictionary with the function call 
+        self.signal_dict[func_call] = "{}".format(conjdisjFormula)
+
         code = "\n"
         code += "\n\ndef " + str(func_call) + "(t=0):"
         code += "\n\tif({} == True):".format(conjdisjFormula)
+        code += "\n\t\tdf.loc[df.Time == t, '{}'] = 1".format(func_call)
         code += "\n\t\treturn True"
         code += "\n\telse:"
+        code += "\n\t\tdf.loc[df.Time == t, '{}'] = -1".format(func_call)
         code += "\n\t\treturn False"
 
         self.appendCode("runSTLcheck.py", code)
@@ -613,17 +625,25 @@ class stlgrammarInterpreter(stlgrammarListener):
         before = self.getExpr(ctx.stlFormula(0))
         after = self.getExpr(ctx.stlFormula(1))
 
-        conjdisjFormula = "((not ({}(t=t))) or ({}(t=t) and {}(t=t)))".format(before, before, after)
-        # print(conjdisjFormula)
+        impliesFormula = "((not ({}(t=t))) or ({}(t=t) and {}(t=t)))".format(before, before, after)
+        # print(impliesFormula)
 
-        # get the function call for this node: signalComp_611
+        # get the function call for this node: StlFormulaImplies_611
         func_call = self.getUID(ctx)["func"]
+
+        # initialize the function call to be all 0's in the dataframe
+        self.df[func_call] = 0
+
+        # update the signal dictionary with the function call 
+        self.signal_dict[func_call] = "{}".format(impliesFormula)
 
         code = "\n"
         code += "\n\ndef " + str(func_call) + "(t=0):"
-        code += "\n\tif({} == True):".format(conjdisjFormula)
+        code += "\n\tif({} == True):".format(impliesFormula)
+        code += "\n\t\tdf.loc[df.Time == t, '{}'] = 1".format(func_call)
         code += "\n\t\treturn True"
         code += "\n\telse:"
+        code += "\n\t\tdf.loc[df.Time == t, '{}'] = -1".format(func_call)
         code += "\n\t\treturn False"
 
         self.appendCode("runSTLcheck.py", code)
