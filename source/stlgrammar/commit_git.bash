@@ -27,7 +27,15 @@ LEGACY_FILES=(
     test_stl_expression.py
 )
 
+# Files created by compiling the grammar *.g4 file with ANTLR
+STATIC_FILES=(
+    stlgrammarLexer.py
+    stlgrammarListener.py
+    stlgrammarParser.py
+)
+
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
 git add $SCRIPT_DIR/"${LEGACY_FILES[@]}"
-git commit -m "data.py replaced by data.csv. runSTLcheck now loads the data.csv for the signals. Access the value by index. Time plots now include implies and conjDisj. runme.bash runs the entire chain"
+git add $SCRIPT_DIR/"${STATIC_FILES[@]}"
+git commit -m "Plot label has the rule in the title."
 git push origin master	

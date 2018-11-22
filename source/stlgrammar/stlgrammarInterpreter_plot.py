@@ -64,7 +64,7 @@ def plot_Comp_Prop(dataFolder, plotFolder):
 
 
     layout = dict(
-        title='STL Check',
+        title='STL Check: {}'.format(signal_dict['STL_rule']),
         xaxis=dict(
             title='Time',
             showticklabels=True,

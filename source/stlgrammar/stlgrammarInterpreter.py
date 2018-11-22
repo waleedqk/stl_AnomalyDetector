@@ -282,6 +282,9 @@ class stlgrammarInterpreter(stlgrammarListener):
         # Store the dataframe to a csv
         self.df.to_csv("dataframe_default.csv", sep=",", index=False)
 
+        # Store the rule as part of the dic - to show on the plot
+        self.signal_dict['STL_rule'] = self.stlString
+
         # save the signal_dict to a file
         np.save('signal_dict.npy', self.signal_dict)
 
