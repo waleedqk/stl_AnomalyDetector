@@ -37,5 +37,5 @@ STATIC_FILES=(
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
 git add $SCRIPT_DIR/"${LEGACY_FILES[@]}"
 git add $SCRIPT_DIR/"${STATIC_FILES[@]}"
-git commit -m "Plot label has the rule in the title."
+git commit -m "The for in the Until formula needs to be from: for j in range(t,i+1)"
 git push origin master	

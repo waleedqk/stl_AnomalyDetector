@@ -233,7 +233,7 @@ class stlgrammarInterpreter(stlgrammarListener):
         code += "\n\t\t\tbreak"
         code += "\n\tif (i > (t + {})):".format(end_t)
         code += "\n\t\treturn False"
-        code += "\n\tfor j in range(t,i):"
+        code += "\n\tfor j in range(t,i+1):"
         code += "\n\t\tif(not ({}(t=j))):".format(phi)
         code += "\n\t\t\treturn False"
         code += "\n\treturn True"
