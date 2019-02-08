@@ -5,7 +5,7 @@ from antlr4.InputStream import InputStream
 from stlgrammarLexer import stlgrammarLexer
 from stlgrammarParser import stlgrammarParser
 from stlgrammarInterpreter import stlgrammarInterpreter
-
+from stlgrammarSimplifier import stlgrammarSimplifier
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
@@ -13,6 +13,9 @@ if __name__ == '__main__':
     else:
         # input_stream = InputStream(sys.stdin.readline())
         stlFile = open('stl.expr','r')
+
+
+
 
     for line in stlFile.readlines():
         stlRule = line.strip()
@@ -26,8 +29,20 @@ if __name__ == '__main__':
         lisp_tree_str = tree.toStringTree(recog=parser)
         print(lisp_tree_str)
 
+        # stlgrammarSimplifier
+
+        simplifier = stlgrammarSimplifier()
+        walker = ParseTreeWalker()
+        walker.walk(simplifier, tree)
+
 
         # stlgrammarInterpreter
+
+        lexer = stlgrammarLexer(InputStream(simplifier.stlNewRule))
+        token_stream = CommonTokenStream(lexer)
+        parser = stlgrammarParser(token_stream)
+        tree = parser.prog()
+
         # print("Start Walking...")
         interpreter = stlgrammarInterpreter()
         walker = ParseTreeWalker()

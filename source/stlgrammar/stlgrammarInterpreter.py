@@ -127,8 +127,8 @@ class stlgrammarInterpreter(stlgrammarListener):
     def funcUIDgen(self, func_prepend="_"):
         '''
         Generate the unique ID and the function call that will use this UID for nodes
-        :param func_prepend: The function constant that will prepend the unique ID
-        :return:
+        :param func_prepend: The function constant that will prepend the unique ID, e.g. func_prepend="StlGlobal_"
+        :return: uid, func_call = 289, StlGlobal_289
         '''
 
         # get unique ID 
@@ -441,6 +441,7 @@ class stlgrammarInterpreter(stlgrammarListener):
         '''
 
         # Get the name of the function associated with the call
+        # TODO: change expression to (remove assignment to signalComp) -  self.setExpr(ctx, self.getExpr(ctx.getChild(0)))
         signalComp = self.setExpr(ctx, self.getExpr(ctx.getChild(0)))
         # print("signalComp: {}".format(self.getExpr(ctx.getChild(0))))
 
@@ -546,6 +547,7 @@ class stlgrammarInterpreter(stlgrammarListener):
     # Enter a parse tree produced by stlgrammarParser#stlConjDisjFormula.
     def enterStlConjDisjFormula(self, ctx:stlgrammarParser.StlConjDisjFormulaContext):
         '''
+        a or b = not(a and b)
         (F[5,6]((4/63) < b)) and G[3,4](a > 25)
         :param ctx:
         :param value: 
@@ -565,6 +567,7 @@ class stlgrammarInterpreter(stlgrammarListener):
     # Exit a parse tree produced by stlgrammarParser#stlConjDisjFormula.
     def exitStlConjDisjFormula(self, ctx:stlgrammarParser.StlConjDisjFormulaContext):
         '''
+        a or b = not(a and b)
         (F[5,6]((4/63) < b)) and G[3,4](a > 25)
         :param ctx:
         :param value: 
@@ -620,7 +623,7 @@ class stlgrammarInterpreter(stlgrammarListener):
     # Exit a parse tree produced by stlgrammarParser#stlFormulaImplies.
     def exitStlFormulaImplies(self, ctx:stlgrammarParser.StlFormulaImpliesContext):
         '''
-        a -> b === (not(a)) or (a and b)
+        a -> b === not(a) or b === not(not(a) and b)
         :param ctx:
         :param value: 
         :return:
@@ -628,7 +631,7 @@ class stlgrammarInterpreter(stlgrammarListener):
         before = self.getExpr(ctx.stlFormula(0))
         after = self.getExpr(ctx.stlFormula(1))
 
-        impliesFormula = "((not ({}(t=t))) or ({}(t=t) and {}(t=t)))".format(before, before, after)
+        impliesFormula = "(not(not({}(t=t)) and {}(t=t)))".format(before, after)
         # print(impliesFormula)
 
         # get the function call for this node: StlFormulaImplies_611
@@ -700,12 +703,14 @@ class stlgrammarInterpreter(stlgrammarListener):
         stlFormula = self.getExpr(ctx.stlFormula())
         # print("stlFormula: {}".format(stlFormula))
 
+        # TODO: change expression to (remove assignment to signalComp) -  self.setExpr(ctx, stlFormula)
         signalComp = self.setExpr(ctx, stlFormula)
 
 
     # Enter a parse tree produced by stlgrammarParser#signalExpr.
     def enterSignalExpr(self, ctx:stlgrammarParser.SignalExprContext):
         '''
+        grammar: signal relOp expr
         :param ctx:
         :return:
         '''
@@ -763,7 +768,7 @@ class stlgrammarInterpreter(stlgrammarListener):
         # get the function call for this node: signalComp_611
         func_call = self.getUID(ctx)["func"]
 
-        # generate code that is associated with a signalBool expr:  a == True, (False != a)
+        # generate code that is associated with a signalExpr expr: a < 54, ((4/63) < a)
         code = self.signalComp_exprCode(func_call=func_call, signal=signal, relOp=relOp, expr=expr)
 
         self.appendCode("runSTLcheck.py", code)
@@ -839,6 +844,7 @@ class stlgrammarInterpreter(stlgrammarListener):
     # Exit a parse tree produced by stlgrammarParser#MulDivExpr.
     def exitMulDivExpr(self, ctx:stlgrammarParser.MulDivExprContext):
         '''
+        grammar: expr op=('*'|'/') expr
         4 / 63
         :param ctx:
         :return:
@@ -855,6 +861,7 @@ class stlgrammarInterpreter(stlgrammarListener):
     # Exit a parse tree produced by stlgrammarParser#AddSubExpr.
     def exitAddSubExpr(self, ctx:stlgrammarParser.AddSubExprContext):
         '''
+        grammar: expr op=('+'|'-') expr
         4 + 63
         :param ctx:
         :return:
@@ -883,6 +890,7 @@ class stlgrammarInterpreter(stlgrammarListener):
     # Exit a parse tree produced by stlgrammarParser#parensExpr.
     def exitParensExpr(self, ctx:stlgrammarParser.ParensExprContext):
         '''
+        grammar: '(' expr ')' 
         get the parsed expression in the parenthesis: (4/3)
         :param ctx:
         :return:
@@ -896,7 +904,7 @@ class stlgrammarInterpreter(stlgrammarListener):
     # Exit a parse tree produced by stlgrammarParser#andorOp.
     def exitAndorOp(self, ctx:stlgrammarParser.AndorOpContext):
         '''
-
+        grammar: 'and' | 'or'
         :param ctx:
         :return:
         '''

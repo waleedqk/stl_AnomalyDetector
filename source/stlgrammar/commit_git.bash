@@ -16,6 +16,7 @@ FILE_LIST=(
     stl.expr
     main.py
     stlgrammarInterpreter.py
+    stlgrammarSimplifier.py
     stlgrammarInterpreter_plot.py
     data.csv
 )
@@ -37,5 +38,5 @@ STATIC_FILES=(
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
 git add $SCRIPT_DIR/"${LEGACY_FILES[@]}"
 git add $SCRIPT_DIR/"${STATIC_FILES[@]}"
-git commit -m "The for in the Until formula needs to be from: for j in range(t,i+1)"
+git commit -m "Added stlgrammarSimplifier.py, the code reads the rule and transforms the logic to its basic components. G, F, implies, or are all changes to be their basic components"
 git push origin master	

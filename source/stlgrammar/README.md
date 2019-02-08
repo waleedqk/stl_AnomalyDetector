@@ -59,10 +59,17 @@ See the visual parse tree
     grun stlgrammar prog -gui stl.expr
 
 
+**File Description**
+
+The code from the stlTest folder has just been ported over to this folder and the grammar has been updated as during the meeting discussions. The grammar file *.g4 has already been compiled using the instructions stated above. To generate code for a STL formula write it to a file and pass that along as an argument to ```main.py```. By default the file to be looked up is: ```stl.expr```
+
+The main curx of the code resides in ```stlgrammarInterpreter.py```. The class housed here is an extension of the ```**stlgrammarListener** ```, which goes through the entry and exit functions of each of the nodes. The logic here generates the output that can be used to check the STL expression provided against a csv dataset.
+
+The ```signal_dict.npy``` is a numpy dictionary generated while running ```stlgrammarInterpreter.py```. Its a dictionary with the key being the function call name and the value being the expression that is being processind in the function.
+
+
 
 **Run the test code**
-
-The code from the stlTest folder has just been ported over to this folder and the grammar has been updated as during the meeting discussions. The grammar file *.g4 already needs to be compiled using the instructions stated above. To generate code for a STL formula write it to a file and pass that along as an argument to ```main.py```. By default the file to be looked up is: ```stl.expr```
 
     python main.py stl.expr
 
