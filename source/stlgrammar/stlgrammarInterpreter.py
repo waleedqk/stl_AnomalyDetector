@@ -28,6 +28,12 @@ class stlgrammarInterpreter(stlgrammarListener):
         self.stack = {}
 
         '''
+        There is a time depth associated with operators 
+        We want to keep the longest possible time depth for the a given correctness property
+        '''
+        self.time_depth = {}
+
+        '''
         keeps a unique list of all the signals being used in the stl rules from the input data
         '''
         self.signals = ["Time"]
@@ -51,11 +57,6 @@ class stlgrammarInterpreter(stlgrammarListener):
         self.outputCode_file = "runSTLcheck.py"
         # clear contents of file
         open(self.outputCode_file, 'w').close()
-
-        '''
-        The maximum time range that can be put to a STL rule
-        '''
-        self.time_max = 20
 
 
         '''
@@ -138,6 +139,27 @@ class stlgrammarInterpreter(stlgrammarListener):
         '''
         self.uids[ctx] = value
 
+
+    def get_timeDepth(self, ctx):
+        '''
+
+        :param ctx:
+        :return:
+        '''
+        return self.time_depth[ctx]
+
+
+    def set_timeDepth(self, ctx, value):
+        '''
+
+        :param ctx:
+        :param value:
+        :return:
+        '''
+        self.time_depth[ctx] = int(value)
+
+
+
     def funcUIDgen(self, func_prepend="_"):
         '''
         Generate the unique ID and the function call that will use this UID for nodes
@@ -173,6 +195,9 @@ class stlgrammarInterpreter(stlgrammarListener):
         '''
         first_call = self.getExpr(ctx.stlFormula())
         # print("first_call: {}".format(first_call))
+
+        timeDepth = int(self.get_timeDepth(ctx.stlFormula()))
+        print("Total signal length required for rule: {}".format(timeDepth))
 
         # add the signal list from the input data to the column names of the dataframe to be created
         self.output_signals.extend(self.signals)
@@ -279,6 +304,9 @@ class stlgrammarInterpreter(stlgrammarListener):
 
         self.appendCode(code)
 
+        # set the time depth for the formula
+        self.set_timeDepth(ctx, max( int(self.get_timeDepth(ctx.stlFormula(0))), int(self.get_timeDepth(ctx.stlFormula(1))) )  )
+
 
     # Enter a parse tree produced by stlgrammarParser#stlUntilFormula.
     def enterStlUntilFormula(self, ctx:stlgrammarParser.StlUntilFormulaContext):
@@ -329,6 +357,12 @@ class stlgrammarInterpreter(stlgrammarListener):
         code += "\n\treturn True"
 
         self.appendCode(code)
+
+        # set the time depth for the formula
+        self.set_timeDepth(ctx, int(end_t) + max( int(self.get_timeDepth(ctx.stlFormula(0))), int(self.get_timeDepth(ctx.stlFormula(1))) )  )
+
+
+
 
     # Enter a parse tree produced by stlgrammarParser#stlNotFormula.
     def enterStlNotFormula(self, ctx:stlgrammarParser.StlNotFormulaContext):
@@ -381,6 +415,9 @@ class stlgrammarInterpreter(stlgrammarListener):
 
         self.appendCode(code)
 
+        # set the time depth for the formula
+        self.set_timeDepth(ctx, self.get_timeDepth(ctx.stlFormula()))
+
 
     # Exit a parse tree produced by stlgrammarParser#stlSignalComp.
     def exitStlSignalComp(self, ctx:stlgrammarParser.StlSignalCompContext):
@@ -392,8 +429,11 @@ class stlgrammarInterpreter(stlgrammarListener):
         '''
 
         # Get the name of the function associated with the call
-        signalComp = self.setExpr(ctx, self.getExpr(ctx.getChild(0)))
+        self.setExpr(ctx, self.getExpr(ctx.getChild(0)))
         # print("signalComp: {}".format(self.getExpr(ctx.getChild(0))))
+
+        # set the time depth for the formula
+        self.set_timeDepth(ctx, self.get_timeDepth(ctx.getChild(0)))
 
 
     # Enter a parse tree produced by stlgrammarParser#stlSignal.
@@ -433,7 +473,8 @@ class stlgrammarInterpreter(stlgrammarListener):
 
         self.appendCode(code)
 
-
+        # set the time depth for the formula
+        self.set_timeDepth(ctx, 0)
 
 
     # Enter a parse tree produced by stlgrammarParser#stlProp.
@@ -477,6 +518,8 @@ class stlgrammarInterpreter(stlgrammarListener):
 
         self.appendCode(code)
 
+        # set the time depth for the formula
+        self.set_timeDepth(ctx, 0)
 
 
     # Exit a parse tree produced by stlgrammarParser#stlParens.
@@ -493,6 +536,10 @@ class stlgrammarInterpreter(stlgrammarListener):
 
         # set formula call to the node of the parenthesis
         self.setExpr(ctx, stlFormula)
+
+
+        # set the time depth for the formula
+        self.set_timeDepth(ctx, self.get_timeDepth(ctx.stlFormula()))
 
 
 
@@ -596,6 +643,9 @@ class stlgrammarInterpreter(stlgrammarListener):
 
         self.appendCode(code)
 
+        # set the time depth for the formula
+        self.set_timeDepth(ctx, 0)
+
 
     # Enter a parse tree produced by stlgrammarParser#signalBool.
     def enterSignalBool(self, ctx:stlgrammarParser.SignalBoolContext):
@@ -650,7 +700,8 @@ class stlgrammarInterpreter(stlgrammarListener):
         
         self.appendCode(code)
 
-
+        # set the time depth for the formula
+        self.set_timeDepth(ctx, 0)
 
 
 
@@ -911,7 +962,7 @@ class stlgrammarInterpreter(stlgrammarListener):
     #         end_t = ctx.timeSlice().end_t().getText().strip()
     #     else:
     #         start_t = 0
-    #         end_t = self.time_max
+    #         end_t = 20 # self.time_max
     #     # print("start: {} \t end: {}".format(start_t, end_t))
     #
     #     stlFormula = self.getExpr(ctx.stlFormula())
@@ -986,7 +1037,7 @@ class stlgrammarInterpreter(stlgrammarListener):
     #         end_t = ctx.timeSlice().end_t().getText().strip()
     #     else:
     #         start_t = 0
-    #         end_t = self.time_max
+    #         end_t = 20 # self.time_max
     #     # print("start: {} \t end: {}".format(start_t, end_t))
     #
     #     stlFormula = self.getExpr(ctx.stlFormula())

@@ -38,5 +38,5 @@ STATIC_FILES=(
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
 git add $SCRIPT_DIR/"${LEGACY_FILES[@]}"
 git add $SCRIPT_DIR/"${STATIC_FILES[@]}"
-git commit -m "The stlgrammarInterpreter.py only looks for the basic operators since it is implied that the stlgrammarSimplifier.py will run before it. It no longer creates the dataframe_default.csv. A df is created at the beginning of the runSTLcheck.py that is used in the code. getUniqueId - generates list of used uids each time. "
+git commit -m "The code now calculates the time depth  needed for the property to make a decision."
 git push origin master	
