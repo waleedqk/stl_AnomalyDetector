@@ -22,15 +22,15 @@
 **Download jar file**
 
     cd /usr/local/lib
-    sudo curl -O http://www.antlr.org/download/antlr-4.7.1-complete.jar
+    sudo curl -O http://www.antlr.org/download/antlr-4.7.2-complete.jar
 
 **Add antlr4 to your class path.**
 
-    export CLASSPATH=".:/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH"
+    export CLASSPATH=".:/usr/local/lib/antlr-4.7.2-complete.jar:$CLASSPATH"
 
 **Create alias**
 
-    alias antlr4='java -Xmx500M -cp "/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH" org.antlr.v4.Tool'
+    alias antlr4='java -Xmx500M -cp "/usr/local/lib/antlr-4.7.2-complete.jar:$CLASSPATH" org.antlr.v4.Tool'
     alias grun='java org.antlr.v4.gui.TestRig'
 
 **Test install**
@@ -41,14 +41,14 @@
 
 sudo gedit ~/.bashrc
 
-    export CLASSPATH=".:/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH"
-    alias antlr4='java -Xmx500M -cp "/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH" org.antlr.v4.Tool'
-    # alias grun='java org.antlr.v4.runtime.misc.TestRig'
+	export CLASSPATH=".:/usr/local/lib/antlr-4.7.2-complete.jar:$CLASSPATH"
+	alias antlr4='java -Xmx500M -cp "/usr/local/lib/antlr-4.7.2-complete.jar:$CLASSPATH" org.antlr.v4.Tool'
+	# alias grun='java org.antlr.v4.runtime.misc.TestRig'
 	alias grun='java org.antlr.v4.gui.TestRig'
-	alias antlr4py3='java -Xmx500M -cp "/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH" org.antlr.v4.Tool -Dlanguage=Python3'
-	alias antlr4py2='java -Xmx500M -cp "/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH" org.antlr.v4.Tool -Dlanguage=Python2'
-	alias antlr4vpy3='java -Xmx500M -cp "/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH" org.antlr.v4.Tool -Dlanguage=Python3 -no-listener -visitor'
-	alias antlr4vpy2='java -Xmx500M -cp "/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH" org.antlr.v4.Tool -Dlanguage=Python2 -no-listener -visitor'
+	alias antlr4py3='java -Xmx500M -cp "/usr/local/lib/antlr-4.7.2-complete.jar:$CLASSPATH" org.antlr.v4.Tool -Dlanguage=Python3'
+	alias antlr4py2='java -Xmx500M -cp "/usr/local/lib/antlr-4.7.2-complete.jar:$CLASSPATH" org.antlr.v4.Tool -Dlanguage=Python2'
+	alias antlr4vpy3='java -Xmx500M -cp "/usr/local/lib/antlr-4.7.2-complete.jar:$CLASSPATH" org.antlr.v4.Tool -Dlanguage=Python3 -no-listener -visitor'
+	alias antlr4vpy2='java -Xmx500M -cp "/usr/local/lib/antlr-4.7.2-complete.jar:$CLASSPATH" org.antlr.v4.Tool -Dlanguage=Python2 -no-listener -visitor'
 	alias pygrun='python3 /opt/antlr/antlr4/runtime/Python3/bin/pygrun'
 
 **Install runtime**
@@ -95,8 +95,8 @@ Unzip the tar.gz files:
 
 Move the files to /opt/antlr:
 
-    sudo mv -v ~/Downloads/antlr4-python2-runtime-4.7.1 /opt/antlr/
-    sudo mv -v ~/Downloads/antlr4-python3-runtime-4.7.1 /opt/antlr/
+    sudo mv -v ~/Downloads/antlr4-python2-runtime-4.7.2 /opt/antlr/
+    sudo mv -v ~/Downloads/antlr4-python3-runtime-4.7.2 /opt/antlr/
 
 then
 
@@ -110,10 +110,10 @@ then
 
 Build the modules: 
 
-    cd /opt/antlr/antlr4-python2-runtime-4.7.1/
-    sudo python3 setup.py install
+    cd /opt/antlr/antlr4-python2-runtime-4.7.2/
+    sudo python2 setup.py install
 
-    cd /opt/antlr/antlr4-python3-runtime-4.7.1/
+    cd /opt/antlr/antlr4-python3-runtime-4.7.2/
     sudo python3 setup.py install
 
     antlr4 -Dlanguage=Python3 Hello.g4
