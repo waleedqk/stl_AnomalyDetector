@@ -63,6 +63,8 @@ See the visual parse tree
 
 The code from the stlTest folder has just been ported over to this folder and the grammar has been updated as during the meeting discussions. The grammar file *.g4 has already been compiled using the instructions stated above. To generate code for a STL formula write it to a file and pass that along as an argument to ```main.py```. By default the file to be looked up is: ```stl.expr```
 
+```stlgrammarSimplifier.py``` does some preprocessing on the stl property specified. It transforms the rules to its basic properties. G, F, implies, or are all transformed into their equivalent base components of the grammar, that uses not, and, until. The resultant rule is the same but uses the base temporal logic and operators.
+
 The main curx of the code resides in ```stlgrammarInterpreter.py```. The class housed here is an extension of the ```**stlgrammarListener** ```, which goes through the entry and exit functions of each of the nodes. The logic here generates the output that can be used to check the STL expression provided against a csv dataset.
 
 The ```signal_dict.npy``` is a numpy dictionary generated while running ```stlgrammarInterpreter.py```. Its a dictionary with the key being the function call name and the value being the expression that is being processind in the function.
@@ -73,18 +75,15 @@ The ```signal_dict.npy``` is a numpy dictionary generated while running ```stlgr
 
     python main.py stl.expr
 
-The resultant of this script creates three files:
+The resultant of this script creates two files:
     1) runSTLcheck.py
-    2) dataframe_default.csv
-    3) signal_dict.npy
+    2) signal_dict.npy
 
-```runSTLcheck.py``` is a script that can be run to see the validity of the rule on a given signal. This includes all the function calls and code associated with the STL formula provided.
+```runSTLcheck.py``` is a script that can be run to see the validity of the rule on a given signal. This includes all the function calls and code associated with the STL formula provided. The code only requires a CSV file that has the data needed to check the rule with the respective column with name of the signal to check.
 
-For checks and plotting a csv file is created for holding the state of the checked data: ```dataframe_default.csv```. The file is loaded when the check is run and updated as the rule is being checked. This csv only has 0's in each column.
+For checks and plotting a csv file is created for holding the state of the checked data after ```runSTLcheck.py``` has been run: ```dataframe_populated.csv```, it has the updated values of the function calls w.r.t time as the code was being run.
 
 ```signal_dict.npy``` is a dictionary, with the key being the function calls and the value being the expression being checked in that function. It is used to update the graph labels when the data is being plotted.
-
-```data.py``` holds some arrays that act as the data used by the checks. This is just a dummy placeholder that acts as data to check the formula on. This needs to be revisited in the future.
 
 Run the following to see if the STL rule was satisfied:
 

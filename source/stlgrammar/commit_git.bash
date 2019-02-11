@@ -18,7 +18,7 @@ FILE_LIST=(
     stlgrammarInterpreter.py
     stlgrammarSimplifier.py
     stlgrammarInterpreter_plot.py
-    data.csv
+    input_data.csv
 )
 
 LEGACY_FILES=(
@@ -38,5 +38,5 @@ STATIC_FILES=(
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
 git add $SCRIPT_DIR/"${LEGACY_FILES[@]}"
 git add $SCRIPT_DIR/"${STATIC_FILES[@]}"
-git commit -m "Added stlgrammarSimplifier.py, the code reads the rule and transforms the logic to its basic components. G, F, implies, or are all changes to be their basic components"
+git commit -m "The stlgrammarInterpreter.py only looks for the basic operators since it is implied that the stlgrammarSimplifier.py will run before it. It no longer creates the dataframe_default.csv. A df is created at the beginning of the runSTLcheck.py that is used in the code. getUniqueId - generates list of used uids each time. "
 git push origin master	
