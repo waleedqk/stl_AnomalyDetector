@@ -9,7 +9,7 @@ FILE_LIST=(
     commit_git.bash
     README.md
     dataGen.ipynb
-    data_Signals.csv
+    input_data.csv
 )
 
 
