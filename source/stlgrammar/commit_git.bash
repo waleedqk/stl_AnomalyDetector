@@ -38,5 +38,5 @@ STATIC_FILES=(
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
 git add $SCRIPT_DIR/"${LEGACY_FILES[@]}"
 git add $SCRIPT_DIR/"${STATIC_FILES[@]}"
-git commit -m "The code now calculates the time depth  needed for the property to make a decision."
+git commit -m "Fix implies and or simplifier conversions. Added rule annotation for the plots. temporal depth feature is also added to the code. "
 git push origin master	

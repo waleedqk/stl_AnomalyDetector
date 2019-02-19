@@ -18,7 +18,6 @@ SCRIPT_NAME = str(sys.argv[0]).split("/")[-1]
 FILE_NAME =  os.path.basename(sys.argv[0])
 HOME = os.environ['HOME']
 
-expr_col = ['signalComp_', 'stlProp_']
 
 def plot_Comp_Prop(dataFolder, plotFolder):
     '''
@@ -39,15 +38,29 @@ def plot_Comp_Prop(dataFolder, plotFolder):
     columnNames = list(df.columns.values)
 
     print("Number of Rows: {} and Col: {}".format(row, col))
-    print("Data has columns: {}".format(columnNames))
+    # print("Data has columns: {}".format(columnNames))
 
-    # list of columns that need to be plotted
-    signal_cols = [x for x in columnNames if x != 'Time']
+    '''
+    some columns just add clutter to the final plot
+    will add them to this list to remove from the final plot
+    '''
+    exclude_columns = ['stlProp_']
+
+    # list of columns that need to be plotted - remove the ones from the exclude list
+    signal_cols = [x for x in columnNames if (x != 'Time') and (any(s not in x for s in exclude_columns))]
+    print("Data has columns: {}".format(signal_cols))
 
     # load the numpy dict that has the func name key to expr value
     signal_dict = np.load('signal_dict.npy').item()
 
+    # delete the entrys that match the exclude columns list
+    for key in list(signal_dict.keys()):
+        if any(s in key for s in exclude_columns):
+            del signal_dict[key]
+
     print(signal_dict)
+
+
 
     data = []
 

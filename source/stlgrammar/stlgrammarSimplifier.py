@@ -111,7 +111,7 @@ class stlgrammarSimplifier(stlgrammarListener):
 
         stlFormula = self.getExpr(ctx.stlFormula())
 
-        stlEventualFormula = "True U {} ({})".format(timeSlice, stlFormula)
+        stlEventualFormula = "(True U {} ({}))".format(timeSlice, stlFormula)
 
         self.setExpr(ctx, stlEventualFormula)
 
@@ -128,7 +128,7 @@ class stlgrammarSimplifier(stlgrammarListener):
         stlFormula_phi = self.getExpr(ctx.stlFormula(0))
         stlFormula_phe = self.getExpr(ctx.stlFormula(1))
 
-        stlFormulaImplies = "not(not({}) and {})".format(stlFormula_phi, stlFormula_phe)
+        stlFormulaImplies = "not({} and not({}))".format(stlFormula_phi, stlFormula_phe)
 
         self.setExpr(ctx, stlFormulaImplies)
 
@@ -145,9 +145,9 @@ class stlgrammarSimplifier(stlgrammarListener):
         stlFormula_phe = self.getExpr(ctx.stlFormula(1))
 
         if andorOp == 'or':
-            stlConjDisjFormula = "not ({} and {})".format(stlFormula_phi, stlFormula_phe)
+            stlConjDisjFormula = "not (not({}) and not({}))".format(stlFormula_phi, stlFormula_phe)
         else:
-            stlConjDisjFormula = "{} {} {}".format(stlFormula_phi, andorOp, stlFormula_phe)
+            stlConjDisjFormula = "({} {} {})".format(stlFormula_phi, andorOp, stlFormula_phe)
 
         self.setExpr(ctx, stlConjDisjFormula)
 
@@ -163,7 +163,7 @@ class stlgrammarSimplifier(stlgrammarListener):
         stlFormula_phi = self.getExpr(ctx.stlFormula(0))
         stlFormula_phe = self.getExpr(ctx.stlFormula(1))
 
-        stlUntilFormula = "{} U {} {}".format(stlFormula_phi, timeSlice, stlFormula_phe)
+        stlUntilFormula = "({} U {} {})".format(stlFormula_phi, timeSlice, stlFormula_phe)
         self.setExpr(ctx, stlUntilFormula)
 
 
@@ -201,7 +201,8 @@ class stlgrammarSimplifier(stlgrammarListener):
         :param ctx:
         :return:
         '''
-        self.setExpr(ctx, ctx.signalID().getText().strip())
+
+        self.setExpr(ctx, self.getExpr(ctx.signal()))
 
 
     # Exit a parse tree produced by stlgrammarParser#stlProp.
@@ -278,6 +279,7 @@ class stlgrammarSimplifier(stlgrammarListener):
     # Exit a parse tree produced by stlgrammarParser#signalBool.
     def exitSignalBool(self, ctx:stlgrammarParser.SignalBoolContext):
         '''
+        grammar: Bool relOp signal
         parse the signalBool: a == True, (False != a)
         :param ctx:
         :return:
@@ -295,6 +297,7 @@ class stlgrammarSimplifier(stlgrammarListener):
     # Exit a parse tree produced by stlgrammarParser#signalName.
     def exitSignalName(self, ctx:stlgrammarParser.SignalNameContext):
         '''
+        grammar: signalID'[t]'  |  signalID
         Get the signal name associated with the node
         Should only have one child
         :param ctx:

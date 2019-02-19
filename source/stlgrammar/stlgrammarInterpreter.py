@@ -34,6 +34,12 @@ class stlgrammarInterpreter(stlgrammarListener):
         self.time_depth = {}
 
         '''
+        at any given node we want access to the entire rule being processed by that node
+        in a string format - to label the curve in the final plots
+        '''
+        self.rule_tree = {}
+
+        '''
         keeps a unique list of all the signals being used in the stl rules from the input data
         '''
         self.signals = ["Time"]
@@ -158,6 +164,23 @@ class stlgrammarInterpreter(stlgrammarListener):
         '''
         self.time_depth[ctx] = int(value)
 
+    def get_rule_tree(self, ctx):
+        '''
+
+        :param ctx: the node to whose contents need to be retrieved
+        :return:
+        '''
+        return self.rule_tree[ctx]
+
+    def set_rule_tree(self, ctx, value):
+        '''
+
+        :param ctx: the node which we need to annotate. Becomes the key to the dict value
+        :param value: the value we want to annotate the node with
+        :return:
+        '''
+        self.rule_tree[ctx] = value
+
 
 
     def funcUIDgen(self, func_prepend="_"):
@@ -195,6 +218,9 @@ class stlgrammarInterpreter(stlgrammarListener):
         '''
         first_call = self.getExpr(ctx.stlFormula())
         # print("first_call: {}".format(first_call))
+
+        annotated_rule = self.get_rule_tree(ctx.stlFormula())
+        print("annotated_rule: {}".format(annotated_rule))
 
         timeDepth = int(self.get_timeDepth(ctx.stlFormula()))
         print("Total signal length required for rule: {}".format(timeDepth))
@@ -283,6 +309,13 @@ class stlgrammarInterpreter(stlgrammarListener):
         conjdisjFormula = "({}(t=t) {} {}(t=t))".format(before, andorOp, after)    # due to the adition of the simplifier the andorOp will always be an 'and'
         # print(conjdisjFormula)
 
+
+        self.set_rule_tree(ctx, "{} {} {}".format(
+            self.get_rule_tree(ctx.stlFormula(0)),
+            andorOp,
+            self.get_rule_tree(ctx.stlFormula(1))
+        ))
+
         # get the function call for this node: StlConjDisj_611
         func_call = self.getUID(ctx)["func"]
 
@@ -291,7 +324,7 @@ class stlgrammarInterpreter(stlgrammarListener):
         self.output_signals.append(func_call)
 
         # update the signal dictionary with the function call 
-        self.signal_dict[func_call] = "{}".format(conjdisjFormula)
+        self.signal_dict[func_call] = self.get_rule_tree(ctx)   # "{}".format(conjdisjFormula)
 
         code = "\n"
         code += "\n\ndef " + str(func_call) + "(t=0):"
@@ -337,24 +370,42 @@ class stlgrammarInterpreter(stlgrammarListener):
         stlFormula_phi = self.getExpr(ctx.stlFormula(0))
         stlFormula_phe = self.getExpr(ctx.stlFormula(1))
 
+        self.set_rule_tree(ctx, "{} U [{}, {}] {}".format(
+            self.get_rule_tree(ctx.stlFormula(0)),
+            start_t,
+            end_t,
+            self.get_rule_tree(ctx.stlFormula(1))
+        ))
+
         # get the function call for this node: StlUntil_611
         func_call = self.getUID(ctx)["func"]
 
+        # add the function call as a column name to be added in the dataframe
+        self.output_signals.append(func_call)
+
+        # update the signal dictionary with the function call
+        self.signal_dict[func_call] = self.get_rule_tree(ctx)   # "{} U [{}, {}] {}".format(stlFormula_phi, start_t, end_t, stlFormula_phe)
+
         code = "\n"
-        code += "\n\ndef " + str(func_call) + "(t=0):"           
+        code += "\n\ndef " + str(func_call) + "(t=0):"
+        code += "\n\tuntil_check = False"
         code += "\n\ttime_phe = df.loc[(df['Time'] >= (t+{})) & (df['Time'] <= (t+{})), 'Time'].values.tolist()".format(start_t, end_t)
-        code += "\n\tphe_check = False"
         code += "\n\tfor i in time_phe:"
         code += "\n\t\tif ({}(t=i)):".format(stlFormula_phe)
-        code += "\n\t\t\tphe_check = True"
+        code += "\n\t\t\tuntil_check = True"
         code += "\n\t\t\tbreak"
-        code += "\n\tif (not(phe_check)):"
+        code += "\n\tif (until_check):"
+        code += "\n\t\ttime_phi = [m for m in time_phe if m >= i]"
+        code += "\n\t\tfor j in time_phi:"
+        code += "\n\t\t\tif(not ({}(t=j))):".format(stlFormula_phi)
+        code += "\n\t\t\t\tuntil_check = False"
+        code += "\n\tif (until_check):"
+        code += "\n\t\tdf.loc[(df['Time'] >= (t+{})) & (df['Time'] <= (t+{})), '{}'] = 1".format(start_t, end_t, func_call)
+        code += "\n\t\treturn True"
+        code += "\n\telse:"
+        code += "\n\t\tdf.loc[(df['Time'] >= (t+{})) & (df['Time'] <= (t+{})), '{}'] = -1".format(start_t, end_t,
+                                                                                                 func_call)
         code += "\n\t\treturn False"
-        code += "\n\ttime_phi = [m for m in time_phe if m >= i]"
-        code += "\n\tfor j in time_phi:"
-        code += "\n\t\tif(not ({}(t=j))):".format(stlFormula_phi)
-        code += "\n\t\t\treturn False"
-        code += "\n\treturn True"
 
         self.appendCode(code)
 
@@ -393,6 +444,10 @@ class stlgrammarInterpreter(stlgrammarListener):
         '''
         stlFormula = self.getExpr(ctx.stlFormula())
 
+        self.set_rule_tree(ctx, "not({})".format(
+            self.get_rule_tree(ctx.stlFormula())
+        ))
+
         # get the function call for this node: signalComp_611
         func_call = self.getUID(ctx)["func"]
 
@@ -401,7 +456,7 @@ class stlgrammarInterpreter(stlgrammarListener):
         self.output_signals.append(func_call)
 
         # update the signal dictionary with the function call 
-        self.signal_dict[func_call] = "not({}[t]) == True".format(stlFormula)
+        self.signal_dict[func_call] = self.get_rule_tree(ctx)    #  "not({}[t]) == True".format(stlFormula)
 
         # generate code that is associated with an stlNotFormula formula: NOT '(' stlFormula ')' 
         code = "\n"
@@ -422,7 +477,7 @@ class stlgrammarInterpreter(stlgrammarListener):
     # Exit a parse tree produced by stlgrammarParser#stlSignalComp.
     def exitStlSignalComp(self, ctx:stlgrammarParser.StlSignalCompContext):
         '''
-
+        grammar:   signal relOp expr   |   signal relOp Bool
         :param ctx:
         :param value: 
         :return:
@@ -435,16 +490,23 @@ class stlgrammarInterpreter(stlgrammarListener):
         # set the time depth for the formula
         self.set_timeDepth(ctx, self.get_timeDepth(ctx.getChild(0)))
 
+        self.set_rule_tree(ctx, self.get_rule_tree(ctx.getChild(0)))
+
+
 
     # Enter a parse tree produced by stlgrammarParser#stlSignal.
     def enterStlSignal(self, ctx:stlgrammarParser.StlSignalContext):
         '''
+        grammar: signal = signalID
         Getting a single signal value as a formula: x | x[t]
         :param ctx:
         :return:
         '''
-        signal = ctx.signal().getText().strip().replace("(","").replace(")","")
+        signal = ctx.signal().getText().strip().replace("(","").replace(")","").replace("[t]","")
+
         print("signal: {}".format(signal))
+
+        self.set_rule_tree(ctx, signal)
 
         # get unique ID and the function call that will use this UID for this node
         uid, func_call = self.funcUIDgen(func_prepend="StlSignal_")
@@ -480,7 +542,7 @@ class stlgrammarInterpreter(stlgrammarListener):
     # Enter a parse tree produced by stlgrammarParser#stlProp.
     def enterStlProp(self, ctx:stlgrammarParser.StlPropContext):
         '''
-        Bool : True | False
+        grammar: True | False
         Getting a single boolean prop as a formula: True
         :param ctx:
         :return:
@@ -498,8 +560,9 @@ class stlgrammarInterpreter(stlgrammarListener):
         # signal calls will only be referred to with their appointed function calls 
         self.setExpr(ctx, func_call)
 
+        self.set_rule_tree(ctx,boolVal)
+
         # add the function call as a column name to be added in the dataframe
-        # self.df[func_call] = 0
         self.output_signals.append(func_call)
 
         # update the signal dictionary with the function call and expression string
@@ -525,7 +588,7 @@ class stlgrammarInterpreter(stlgrammarListener):
     # Exit a parse tree produced by stlgrammarParser#stlParens.
     def exitStlParens(self, ctx:stlgrammarParser.StlParensContext):
         '''
-
+        grammar: '(' stlFormula ')'
         :param ctx:
         :param value: 
         :return:
@@ -540,6 +603,8 @@ class stlgrammarInterpreter(stlgrammarListener):
 
         # set the time depth for the formula
         self.set_timeDepth(ctx, self.get_timeDepth(ctx.stlFormula()))
+
+        self.set_rule_tree(ctx, "({})".format(self.get_rule_tree(ctx.stlFormula())))
 
 
 
@@ -581,6 +646,7 @@ class stlgrammarInterpreter(stlgrammarListener):
     # Exit a parse tree produced by stlgrammarParser#signalExpr.
     def exitSignalExpr(self, ctx:stlgrammarParser.SignalExprContext):
         '''
+        grammar: signal relOp expr
         parse the signalExpr: a < 54, ((4/63) < a)
         :param ctx:
         :return:
@@ -619,12 +685,16 @@ class stlgrammarInterpreter(stlgrammarListener):
             relOp = switchCase.get(relOp,"==")
 
 
+        self.set_rule_tree(ctx, "{}[t] {} {}".format(
+            self.get_rule_tree(ctx.signal()),
+            relOp,
+            self.get_rule_tree(ctx.expr())
+        ))
+
         # get the function call for this node: signalComp_611
         func_call = self.getUID(ctx)["func"]
 
-
         # add the function call as a column name to be added in the dataframe
-        # self.df[func_call] = 0
         self.output_signals.append(func_call)
 
         # update the signal dictionary with the function call and expression string
@@ -650,6 +720,7 @@ class stlgrammarInterpreter(stlgrammarListener):
     # Enter a parse tree produced by stlgrammarParser#signalBool.
     def enterSignalBool(self, ctx:stlgrammarParser.SignalBoolContext):
         '''
+        grammar: Bool relOp signal
         :param ctx:
         :return:
         '''
@@ -666,6 +737,7 @@ class stlgrammarInterpreter(stlgrammarListener):
     # Exit a parse tree produced by stlgrammarParser#signalBool.
     def exitSignalBool(self, ctx:stlgrammarParser.SignalBoolContext):
         '''
+        grammar: Bool relOp signal
         parse the signalBool: a == True, (False != a)
         :param ctx:
         :return:
@@ -675,13 +747,18 @@ class stlgrammarInterpreter(stlgrammarListener):
         relOp = ctx.relOp().getText().strip()
         boolVal = ctx.Bool().getText().strip().replace("(","").replace(")","")
 
+        self.set_rule_tree(ctx, "{}[t] {} {}".format(
+            self.get_rule_tree(ctx.signal()),
+            relOp,
+            boolVal
+        ))
+
         # print("SignalBool: {}".format(self.getExpr(ctx)))
 
         # get the function call for this node: signalComp_611
         func_call = self.getUID(ctx)["func"]
 
         # add the function call as a column name to be added in the dataframe
-        # self.df[func_call] = 0
         self.output_signals.append(func_call)
 
         # update the signal dictionary with the function call and expression string
@@ -718,6 +795,7 @@ class stlgrammarInterpreter(stlgrammarListener):
     # Exit a parse tree produced by stlgrammarParser#signalName.
     def exitSignalName(self, ctx:stlgrammarParser.SignalNameContext):
         '''
+        grammar: signalID'[t]'  |  signalID
         Get the signal name associated with the node
         Should only have one child
         :param ctx:
@@ -725,11 +803,14 @@ class stlgrammarInterpreter(stlgrammarListener):
         '''
 
         # print("The signal name is: {}".format(self.getExpr(ctx)))
-        self.setExpr(ctx, self.getExpr(ctx.signalID()))   
+        self.setExpr(ctx, self.getExpr(ctx.signalID()))
+
+        self.set_rule_tree(ctx, self.get_rule_tree(ctx.signalID()))
 
     # Exit a parse tree produced by stlgrammarParser#signalID.
     def exitSignalID(self, ctx:stlgrammarParser.SignalIDContext):
         '''
+        grammar: ID
         Update the dict self.signals with unique signals used in the stl rules
         e.g. a, x, time, trigger
         :param ctx:
@@ -739,9 +820,14 @@ class stlgrammarInterpreter(stlgrammarListener):
 
         self.setExpr(ctx, signal)
 
+        self.set_rule_tree(ctx, signal)
+
         # if the signal name is being seen for the first time, add to global signal list
         if signal not in self.signals:
             self.signals.append(signal)
+
+            # update the signal dictionary with the signal call 
+            self.signal_dict[signal] = "{}".format(signal)
 
 
     # Exit a parse tree produced by stlgrammarParser#MulDivExpr.
@@ -761,6 +847,8 @@ class stlgrammarInterpreter(stlgrammarListener):
 
         self.setExpr(ctx, expr)
 
+        self.set_rule_tree(ctx, expr)
+
     # Exit a parse tree produced by stlgrammarParser#AddSubExpr.
     def exitAddSubExpr(self, ctx:stlgrammarParser.AddSubExprContext):
         '''
@@ -776,7 +864,9 @@ class stlgrammarInterpreter(stlgrammarListener):
         expr = "({} {} {})".format(first, operator, second)
         # print(expr)
 
-        self.setExpr(ctx, expr)  
+        self.setExpr(ctx, expr)
+
+        self.set_rule_tree(ctx, expr)
 
     # Exit a parse tree produced by stlgrammarParser#intExpr.
     def exitIntExpr(self, ctx:stlgrammarParser.IntExprContext):
@@ -790,6 +880,8 @@ class stlgrammarInterpreter(stlgrammarListener):
 
         self.setExpr(ctx, intExpr)
 
+        self.set_rule_tree(ctx, intExpr)
+
     # Exit a parse tree produced by stlgrammarParser#parensExpr.
     def exitParensExpr(self, ctx:stlgrammarParser.ParensExprContext):
         '''
@@ -802,7 +894,11 @@ class stlgrammarInterpreter(stlgrammarListener):
         expr = self.getExpr(ctx.expr())
         # print(expr)
 
-        self.setExpr(ctx, expr) 
+        self.setExpr(ctx, expr)
+
+        self.set_rule_tree(ctx, expr)
+
+
 
     # Exit a parse tree produced by stlgrammarParser#andorOp.
     def exitAndorOp(self, ctx:stlgrammarParser.AndorOpContext):
