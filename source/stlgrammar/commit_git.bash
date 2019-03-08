@@ -38,5 +38,5 @@ STATIC_FILES=(
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
 git add $SCRIPT_DIR/"${LEGACY_FILES[@]}"
 git add $SCRIPT_DIR/"${STATIC_FILES[@]}"
-git commit -m "Fix implies and or simplifier conversions. Added rule annotation for the plots. temporal depth feature is also added to the code. "
+git commit -m "Added more properties to check validaty of framework."
 git push origin master	
