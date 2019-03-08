@@ -395,7 +395,7 @@ class stlgrammarInterpreter(stlgrammarListener):
         code += "\n\t\t\tuntil_check = True"
         code += "\n\t\t\tbreak"
         code += "\n\tif (until_check):"
-        code += "\n\t\ttime_phi = [m for m in time_phe if m >= i]"
+        code += "\n\t\ttime_phi = [m for m in time_phe if m <= i]"
         code += "\n\t\tfor j in time_phi:"
         code += "\n\t\t\tif(not ({}(t=j))):".format(stlFormula_phi)
         code += "\n\t\t\t\tuntil_check = False"
