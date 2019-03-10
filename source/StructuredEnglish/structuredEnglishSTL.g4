@@ -92,7 +92,7 @@ constrainedChainPattern1_2:
     ;
 
 realtimeType:
-    'it is always the case that ' (durationCategory | periodicCategory | realtimeOrderCategory)
+    'its always the case that ' (durationCategory | periodicCategory | realtimeOrderCategory)
     ;
 
 
@@ -117,7 +117,7 @@ boundedRecurrencePattern:
     ;
 
 realtimeOrderCategory:
-    'if ' signalComp 'holds, then ' signalComp ' holds ' (boundedResponsePattern | boundedInvariancePattern)
+    'if ' signalComp ' holds, then ' signalComp ' holds ' (boundedResponsePattern | boundedInvariancePattern)
     ;
 
 boundedResponsePattern:

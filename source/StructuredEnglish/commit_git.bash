@@ -17,5 +17,5 @@ FILE_LIST=(
 )
 
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
-git commit -m "New grammar, based on the paper: 'Real-time specification patterns'"
+git commit -m "Fixed minor space issue"
 git push origin master	
