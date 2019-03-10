@@ -17,5 +17,5 @@ FILE_LIST=(
 )
 
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
-git commit -m "Fixed minor space issue"
+git commit -m "Test phrases with the grammar"
 git push origin master	

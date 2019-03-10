@@ -1,27 +1,15 @@
 Globally, it is always the case that if x == 0 holds, then y == 1 holds after at most 6 time unit(s).
 
+    G(x == 0 -> F[0,6](y == 1))
 
+Globally, its always the case that x == 0 holds at least every 10 time unit(s).
 
+    G(F[0,20](x == 0))
 
+Globally, its always the case that if RampDownInitiated == True holds, then AssistTorque == 0 holds after at most 20 time unit(s).
 
+    G((RampDownInitiated == True) -> F[0,20](AssistTorque == 0))
 
+Globally, its always the case that if RampDownInitiated == True holds, then AssistTorque != 0 holds for at least 19 time unit(s).
 
-
-
-
-Always that (If (x>5) occur it implies (Eventually that (y>1)))
-
-
-
-“Whenever Class1 is in state Wait, it will enter the state Process within 5 time units.”
-
-    G( (Class1.Wait) -> F[0,5] (Class1.Process))
-
-
-“Globally, it is always the case that if P holds, then S holds within c time units.”
-
-    G( P -> F[0,c] (S))
-
-"Globally, it is always the case that P holds at least every c time unit(s).”
-
-    G(F[0,c] (P))
+    G((RampDownInitiated == True) -> G[0,19](AssistTorque != 0))
