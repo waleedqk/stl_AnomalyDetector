@@ -234,7 +234,7 @@ class stlgrammarInterpreter(stlgrammarListener):
 
 
         code = ""
-        code += "\nimport os, sys, random"
+        code += "\nimport os, sys, random, time"
         code += "\nimport numpy as np"
         code += "\nimport pandas as pd"
         code += "\n\n"
@@ -254,9 +254,12 @@ class stlgrammarInterpreter(stlgrammarListener):
 
         code = ""
         code += "\n\nif __name__ == '__main__':"
+        code += "\n\tstart_time = time.time()"
         code += "\n\tstl_rule = " + first_call + "(t=0)"
+        code += "\n\tend_time = time.time()"
         code += "\n\tprint('Checking STL rule: {}')".format(annotated_rule) # self.stlString
         code += "\n\tprint('STL rule was satisfied: {}'.format(stl_rule))"
+        code += "\n\tprint('Execution Run-Time: {}'.format((end_time-start_time)))"
         code += "\n\tdf.to_csv('dataframe_populated.csv', sep=',', index=False)"
 
         self.appendCode(code)

@@ -38,5 +38,5 @@ STATIC_FILES=(
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
 git add $SCRIPT_DIR/"${LEGACY_FILES[@]}"
 git add $SCRIPT_DIR/"${STATIC_FILES[@]}"
-git commit -m "Fixing string formats in stlgrammarInterpreter"
+git commit -m "Print execution run time information"
 git push origin master	
