@@ -38,5 +38,5 @@ STATIC_FILES=(
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
 git add $SCRIPT_DIR/"${LEGACY_FILES[@]}"
 git add $SCRIPT_DIR/"${STATIC_FILES[@]}"
-git commit -m "Added more properties to check validaty of framework."
+git commit -m "Fixing string formats in stlgrammarInterpreter"
 git push origin master	
