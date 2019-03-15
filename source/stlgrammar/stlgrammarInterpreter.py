@@ -246,6 +246,7 @@ class stlgrammarInterpreter(stlgrammarListener):
         code += "\n\tdf[col] = input_data_df[col]"
         code += "\n\ndf.fillna(0, inplace=True)"
         code += "\n\ndel input_data_df"
+        code += "\n\ndf.set_index('Time', drop=False, inplace=True)"
 
         with open(self.outputCode_file, 'r+') as f:
             content = f.read()
@@ -254,6 +255,7 @@ class stlgrammarInterpreter(stlgrammarListener):
 
         code = ""
         code += "\n\nif __name__ == '__main__':"
+        code += "\n\tprint('Starting monitor ecexution...')"
         code += "\n\tstart_time = time.time()"
         code += "\n\tstl_rule = " + first_call + "(t=0)"
         code += "\n\tend_time = time.time()"
@@ -332,10 +334,10 @@ class stlgrammarInterpreter(stlgrammarListener):
         code = "\n"
         code += "\n\ndef " + str(func_call) + "(t=0):"
         code += "\n\tif({} == True):".format(conjdisjFormula)
-        code += "\n\t\tdf.loc[df.Time == t, '{}'] = 1".format(func_call)
+        code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)
         code += "\n\t\treturn True"
         code += "\n\telse:"
-        code += "\n\t\tdf.loc[df.Time == t, '{}'] = -1".format(func_call)
+        code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
         code += "\n\t\treturn False"
 
         self.appendCode(code)
@@ -404,11 +406,11 @@ class stlgrammarInterpreter(stlgrammarListener):
         code += "\n\t\t\t\tuntil_check = False"
         # code += "\n\t\t\tbreak"  ## Can be added here to break from the loop early
         code += "\n\tif (until_check):"
-        code += "\n\t\tdf.loc[df.Time == t, '{}'] = 1".format(func_call)
+        code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)
         # code += "\n\t\tdf.loc[(df['Time'] >= (t+{})) & (df['Time'] <= (t+{})), '{}'] = 1".format(start_t, end_t, func_call)
         code += "\n\t\treturn True"
         code += "\n\telse:"
-        code += "\n\t\tdf.loc[df.Time == t, '{}'] = -1".format(func_call)
+        code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
         # code += "\n\t\tdf.loc[(df['Time'] >= (t+{})) & (df['Time'] <= (t+{})), '{}'] = -1".format(start_t, end_t, func_call)
         code += "\n\t\treturn False"
 
@@ -467,10 +469,10 @@ class stlgrammarInterpreter(stlgrammarListener):
         code = "\n"
         code += "\n\ndef " + str(func_call) + "(t=0):"
         code += "\n\tif( not( {}(t=t) )):".format(stlFormula)
-        code += "\n\t\tdf.loc[df.Time == t, '{}'] = 1".format(func_call)
+        code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)
         code += "\n\t\treturn True"
         code += "\n\telse:"
-        code += "\n\t\tdf.loc[df.Time == t, '{}'] = -1".format(func_call)
+        code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
         code += "\n\t\treturn False"
 
         self.appendCode(code)
@@ -531,11 +533,11 @@ class stlgrammarInterpreter(stlgrammarListener):
 
         code = "\n"
         code += "\n\ndef " + func_call + "(t=0):"
-        code += "\n\tif(df.loc[df['Time'] == t, '{}'].iloc[0] == True):".format(signal)
-        code += "\n\t\tdf.loc[df.Time == t, '{}'] = 1".format(func_call)
+        code += "\n\tif(df.at[t, '{}'] == True):".format(signal)
+        code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)
         code += "\n\t\treturn True"
         code += "\n\telse:"
-        code += "\n\t\tdf.loc[df.Time == t, '{}'] = -1".format(func_call)
+        code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
         code += "\n\t\treturn False"
 
         self.appendCode(code)
@@ -578,10 +580,10 @@ class stlgrammarInterpreter(stlgrammarListener):
         code = "\n"
         code += "\n\ndef " + func_call + "(t=0):"
         code += "\n\tif({} == True):".format(boolVal)
-        code += "\n\t\tdf.loc[df.Time == t, '{}'] = 1".format(func_call)
+        code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)
         code += "\n\t\treturn True"
         code += "\n\telse:"
-        code += "\n\t\tdf.loc[df.Time == t, '{}'] = -1".format(func_call)
+        code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
         code += "\n\t\treturn False"        
 
         self.appendCode(code)
@@ -709,11 +711,12 @@ class stlgrammarInterpreter(stlgrammarListener):
         code = "\n"
         code += "\n\ndef " + str(func_call) + "(t=0):"
         # code += "\n\tif({}[t] {} {}):".format(signal, relOp, expr)
-        code += "\n\tif(df.loc[df['Time'] == t, '{}'].iloc[0] {} {}):".format(signal, relOp, expr)
-        code += "\n\t\tdf.loc[df.Time == t, '{}'] = 1".format(func_call)          
+        # code += "\n\tif(df.loc[df['Time'] == t, '{}'].iloc[0] {} {}):".format(signal, relOp, expr)
+        code += "\n\tif(df.at[t, '{}'] {} {}):".format(signal, relOp, expr)
+        code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)         
         code += "\n\t\treturn True"
         code += "\n\telse:"
-        code += "\n\t\tdf.loc[df.Time == t, '{}'] = -1".format(func_call)
+        code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
         code += "\n\t\treturn False"
 
         self.appendCode(code)
@@ -772,11 +775,12 @@ class stlgrammarInterpreter(stlgrammarListener):
         # generate code that is associated with a signalBool expr:  a == True, (False != a)
         code = "\n"
         code += "\n\ndef " + str(func_call) + "(t=0):"
-        code += "\n\tif(df.loc[df['Time'] == t, '{}'].iloc[0] {} {}):".format(signal, relOp, boolVal)
-        code += "\n\t\tdf.loc[df.Time == t, '{}'] = 1".format(func_call)
+        # code += "\n\tif(df.loc[df['Time'] == t, '{}'].iloc[0] {} {}):".format(signal, relOp, boolVal)
+        code += "\n\tif(df.at[t, '{}'] {} {}):".format(signal, relOp, boolVal)
+        code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)
         code += "\n\t\treturn True"
         code += "\n\telse:"
-        code += "\n\t\tdf.loc[df.Time == t, '{}'] = -1".format(func_call)
+        code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
         code += "\n\t\treturn False"
         
         

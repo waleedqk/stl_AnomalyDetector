@@ -38,5 +38,5 @@ STATIC_FILES=(
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
 git add $SCRIPT_DIR/"${LEGACY_FILES[@]}"
 git add $SCRIPT_DIR/"${STATIC_FILES[@]}"
-git commit -m "Print execution run time information"
+git commit -m "Set Time column as index, and set / get values using the df.at[] function call"
 git push origin master	
