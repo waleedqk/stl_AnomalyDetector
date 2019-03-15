@@ -58,6 +58,13 @@ class stlgrammarInterpreter(stlgrammarListener):
         self.uids = {}
 
         '''
+        A boolean value, that is used to check if the populated dataframe should be updated
+        default is true
+        when calculating timing of execution, is turned to false 
+        '''
+        self.diagnostic = False
+
+        '''
         output code file name
         '''
         self.outputCode_file = "runSTLcheck.py"
@@ -334,10 +341,12 @@ class stlgrammarInterpreter(stlgrammarListener):
         code = "\n"
         code += "\n\ndef " + str(func_call) + "(t=0):"
         code += "\n\tif({} == True):".format(conjdisjFormula)
-        code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)
+        if (self.diagnostic):
+            code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)
         code += "\n\t\treturn True"
         code += "\n\telse:"
-        code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
+        if (self.diagnostic):
+            code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
         code += "\n\t\treturn False"
 
         self.appendCode(code)
@@ -406,12 +415,14 @@ class stlgrammarInterpreter(stlgrammarListener):
         code += "\n\t\t\t\tuntil_check = False"
         # code += "\n\t\t\tbreak"  ## Can be added here to break from the loop early
         code += "\n\tif (until_check):"
-        code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)
-        # code += "\n\t\tdf.loc[(df['Time'] >= (t+{})) & (df['Time'] <= (t+{})), '{}'] = 1".format(start_t, end_t, func_call)
+        if (self.diagnostic):
+            code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)
+            # code += "\n\t\tdf.loc[(df['Time'] >= (t+{})) & (df['Time'] <= (t+{})), '{}'] = 1".format(start_t, end_t, func_call)
         code += "\n\t\treturn True"
         code += "\n\telse:"
-        code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
-        # code += "\n\t\tdf.loc[(df['Time'] >= (t+{})) & (df['Time'] <= (t+{})), '{}'] = -1".format(start_t, end_t, func_call)
+        if (self.diagnostic):
+            code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
+            # code += "\n\t\tdf.loc[(df['Time'] >= (t+{})) & (df['Time'] <= (t+{})), '{}'] = -1".format(start_t, end_t, func_call)
         code += "\n\t\treturn False"
 
         self.appendCode(code)
@@ -469,10 +480,12 @@ class stlgrammarInterpreter(stlgrammarListener):
         code = "\n"
         code += "\n\ndef " + str(func_call) + "(t=0):"
         code += "\n\tif( not( {}(t=t) )):".format(stlFormula)
-        code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)
+        if (self.diagnostic):
+            code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)
         code += "\n\t\treturn True"
         code += "\n\telse:"
-        code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
+        if (self.diagnostic):
+            code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
         code += "\n\t\treturn False"
 
         self.appendCode(code)
@@ -534,10 +547,12 @@ class stlgrammarInterpreter(stlgrammarListener):
         code = "\n"
         code += "\n\ndef " + func_call + "(t=0):"
         code += "\n\tif(df.at[t, '{}'] == True):".format(signal)
-        code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)
+        if (self.diagnostic):
+            code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)
         code += "\n\t\treturn True"
         code += "\n\telse:"
-        code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
+        if (self.diagnostic):
+            code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
         code += "\n\t\treturn False"
 
         self.appendCode(code)
@@ -580,10 +595,12 @@ class stlgrammarInterpreter(stlgrammarListener):
         code = "\n"
         code += "\n\ndef " + func_call + "(t=0):"
         code += "\n\tif({} == True):".format(boolVal)
-        code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)
+        if (self.diagnostic):
+            code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)
         code += "\n\t\treturn True"
         code += "\n\telse:"
-        code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
+        if (self.diagnostic):
+            code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
         code += "\n\t\treturn False"        
 
         self.appendCode(code)
@@ -713,10 +730,12 @@ class stlgrammarInterpreter(stlgrammarListener):
         # code += "\n\tif({}[t] {} {}):".format(signal, relOp, expr)
         # code += "\n\tif(df.loc[df['Time'] == t, '{}'].iloc[0] {} {}):".format(signal, relOp, expr)
         code += "\n\tif(df.at[t, '{}'] {} {}):".format(signal, relOp, expr)
-        code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)         
+        if (self.diagnostic):
+            code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)         
         code += "\n\t\treturn True"
         code += "\n\telse:"
-        code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
+        if (self.diagnostic):
+            code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
         code += "\n\t\treturn False"
 
         self.appendCode(code)
@@ -777,10 +796,12 @@ class stlgrammarInterpreter(stlgrammarListener):
         code += "\n\ndef " + str(func_call) + "(t=0):"
         # code += "\n\tif(df.loc[df['Time'] == t, '{}'].iloc[0] {} {}):".format(signal, relOp, boolVal)
         code += "\n\tif(df.at[t, '{}'] {} {}):".format(signal, relOp, boolVal)
-        code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)
+        if (self.diagnostic):
+            code += "\n\t\tdf.at[t, '{}'] = 1".format(func_call)
         code += "\n\t\treturn True"
         code += "\n\telse:"
-        code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
+        if (self.diagnostic):
+            code += "\n\t\tdf.at[t, '{}'] = -1".format(func_call)
         code += "\n\t\treturn False"
         
         

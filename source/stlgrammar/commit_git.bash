@@ -38,5 +38,5 @@ STATIC_FILES=(
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
 git add $SCRIPT_DIR/"${LEGACY_FILES[@]}"
 git add $SCRIPT_DIR/"${STATIC_FILES[@]}"
-git commit -m "Set Time column as index, and set / get values using the df.at[] function call"
+git commit -m "self.diagnostic boolean added. If True, will add code to runSTLcheck that updates the populated csv. If turned to False, when checking time of execution of test cases."
 git push origin master	
