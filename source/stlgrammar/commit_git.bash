@@ -38,5 +38,5 @@ STATIC_FILES=(
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
 git add $SCRIPT_DIR/"${LEGACY_FILES[@]}"
 git add $SCRIPT_DIR/"${STATIC_FILES[@]}"
-git commit -m "self.diagnostic boolean added. If True, will add code to runSTLcheck that updates the populated csv. If turned to False, when checking time of execution of test cases."
+git commit -m "Add REAL as part of grammar"
 git push origin master	

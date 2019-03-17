@@ -50,11 +50,9 @@ expr:   expr op=('*'|'/') expr                          # MulDivExpr
     |   '(' expr ')'                                    # parensExpr
     ;
 
-signalValue:
-        INT | Bool
-        ;
-
-
+// signalValue:
+//         INT | Bool
+//         ;
 
 relOp:
       OP_EE | OP_NE | OP_GT | OP_LEQ | OP_LT | OP_GEQ
