@@ -1,0 +1,9 @@
+numpy
+scipy
+matplotlib
+pandas
+plotly
+sklearn
+unicodecsv
+tensorflow
+psycopg2==2.7.3.2

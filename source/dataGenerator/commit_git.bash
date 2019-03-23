@@ -9,10 +9,17 @@ FILE_LIST=(
     commit_git.bash
     README.md
     dataGen.ipynb
+    dataGenerator.py
+    timing_result.py
+    plot_results.py
     input_data.csv
+    timing_results.csv
+    requirements.txt
+    runme.bash
+    py_venv.md
 )
 
 
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
-git commit -m "Generating data files with signal values for testing"
+git commit -m "Plotting experimental results"
 git push origin master	
