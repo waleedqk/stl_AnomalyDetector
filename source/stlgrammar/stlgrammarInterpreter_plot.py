@@ -1,3 +1,8 @@
+"""
+REFERENCES:
+https://plot.ly/python/line-charts/
+"""
+
 import os, sys, time
 import re
 import glob
@@ -70,7 +75,10 @@ def plot_Comp_Prop(dataFolder, plotFolder):
             x=df.Time,
             y=df[i],
             mode='lines',
-            name=signal_dict[i]
+            name=signal_dict[i],
+            line=dict(
+                shape='hv'
+            )
         )
         
         data.append(trace)
@@ -79,7 +87,7 @@ def plot_Comp_Prop(dataFolder, plotFolder):
     layout = dict(
         title='STL Check: {}'.format(signal_dict['STL_rule']),
         xaxis=dict(
-            title='Time',
+            title='Time (s)',
             showticklabels=True,
             tickangle=45,
             rangeslider=dict(

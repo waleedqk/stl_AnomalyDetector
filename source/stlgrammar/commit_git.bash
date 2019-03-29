@@ -19,6 +19,8 @@ FILE_LIST=(
     stlgrammarSimplifier.py
     stlgrammarInterpreter_plot.py
     input_data.csv
+    input_data_sample_1.csv
+    input_data_sample_1000.csv
 )
 
 LEGACY_FILES=(
@@ -38,5 +40,5 @@ STATIC_FILES=(
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
 git add $SCRIPT_DIR/"${LEGACY_FILES[@]}"
 git add $SCRIPT_DIR/"${STATIC_FILES[@]}"
-git commit -m "Add REAL as part of grammar"
+git commit -m "Lots of changes made"
 git push origin master	

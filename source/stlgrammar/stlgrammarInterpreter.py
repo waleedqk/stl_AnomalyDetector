@@ -62,7 +62,7 @@ class stlgrammarInterpreter(stlgrammarListener):
         default is true
         when calculating timing of execution, is turned to false 
         '''
-        self.diagnostic = False
+        self.diagnostic = True
 
         '''
         output code file name
@@ -254,6 +254,7 @@ class stlgrammarInterpreter(stlgrammarListener):
         code += "\n\ndf.fillna(0, inplace=True)"
         code += "\n\ndel input_data_df"
         code += "\n\ndf.set_index('Time', drop=False, inplace=True)"
+        code += "\n\ndf['index'] = list(range(len(df.index)))"
 
         with open(self.outputCode_file, 'r+') as f:
             content = f.read()
