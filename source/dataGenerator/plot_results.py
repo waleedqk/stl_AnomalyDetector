@@ -37,6 +37,8 @@ csv_dir = dirname
 
 colors = ['rgba(93, 164, 214, 0.5)', 'rgba(255, 144, 14, 0.5)', 'rgba(44, 160, 101, 0.5)', 'rgba(255, 65, 54, 0.5)']
 
+symbols = ['diamond', 'x-dot', 'triangle-up', 'cross-dot']
+
 def get_data():
     # location of csv file
     csv_file = csv_dir + "/timing_results.csv"
@@ -81,19 +83,21 @@ def gen_plots(df):
         dff[trace_name] = df.loc[df['Trace_length'] == trace_name, 'Execution_Time (sec)'].values
 
     x_data = list(dff.columns.values)
-    x_data = ["{} Samples".format(x) for x in x_data]
+    x_data = ["{}".format(x) for x in x_data]
+    x_data = list( map(str, x_data) )
 
     y_data = dff.values.T.tolist()
-    y_data = np.log10(y_data)
+    # Log the results so the graph isnt sparse
+    # y_data = np.log10(y_data)
 
     traces = []
 
     for xd, yd, cls in zip(x_data, y_data, colors):
         traces.append(go.Box(
             y=yd,
-            name=xd,
+            name="`{}".format(xd),
             boxpoints='all',
-            boxmean=True,
+            boxmean='sd', # or True
             jitter=0.5,
             whiskerwidth=0.2,
             fillcolor=cls,
@@ -111,6 +115,7 @@ def gen_plots(df):
         ),
         yaxis=dict(
             title='log(Time (s))',
+            type='log',
             autorange=True,
             showgrid=True,
             zeroline=True,
@@ -137,6 +142,69 @@ def gen_plots(df):
             fig,
             filename=plot_dir + '/Experimental-Results.html'.format(),
             auto_open=False)
+
+
+
+
+
+
+
+    traces = []
+
+    for xd, yd, cls, sym in zip(x_data, y_data, colors, symbols):
+        traces.append(go.Scatter(
+            x= ["`{}".format(xd)]*len(yd),
+            y=yd,
+            name="{} samples".format(xd),
+            mode='markers',
+            # fillcolor=cls,
+            marker=dict(
+                size=12,
+                # line=dict(width=0),
+                color=cls,
+                symbol=sym,
+            ),
+            # text=xd
+        ))
+
+    layout = go.Layout(
+        title='Computation Time vs Trace Length',
+        xaxis=dict(
+            title='Trace Length',
+
+        ),
+        yaxis=dict(
+            title='log(Time (s))',
+            type='log',
+            autorange=True,
+            showgrid=True,
+            zeroline=True,
+            # dtick=5, # shows y-axis ticks in the specified increments
+            gridcolor='rgb(255, 255, 255)',
+            gridwidth=1,
+            zerolinecolor='rgb(255, 255, 255)',
+            zerolinewidth=2,
+        ),
+        margin=dict(
+            l=40,
+            r=30,
+            b=80,
+            t=100,
+        ),
+        paper_bgcolor='rgb(243, 243, 243)',
+        plot_bgcolor='rgb(243, 243, 243)',
+        showlegend=True
+    )
+
+    fig = dict(data=traces, layout=layout)
+
+    plotly.offline.plot(
+            fig,
+            filename=plot_dir + '/Experimental-Results-2.html'.format(),
+            auto_open=False)
+
+
+
 
     # data = []
     #

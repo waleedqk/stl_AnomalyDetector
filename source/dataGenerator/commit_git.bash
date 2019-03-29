@@ -12,6 +12,7 @@ FILE_LIST=(
     dataGenerator.py
     timing_result.py
     plot_results.py
+    input_data_1000.csv
     input_data.csv
     timing_results.csv
     requirements.txt
