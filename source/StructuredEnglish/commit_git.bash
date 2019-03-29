@@ -17,5 +17,5 @@ FILE_LIST=(
 )
 
 git add $SCRIPT_DIR/"${FILE_LIST[@]}"
-git commit -m "Test phrases with the grammar"
+git commit -m "Grammar as described in SPIDER"
 git push origin master	

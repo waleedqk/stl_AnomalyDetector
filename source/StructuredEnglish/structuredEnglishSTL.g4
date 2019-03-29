@@ -27,7 +27,11 @@ stlFormula:
     ;
 
 scope:
-    'Globally' | 'Before ' signalComp | 'After ' signalComp | 'Between ' signalComp ' and ' signalComp | 'After ' signalComp ' until ' signalComp
+    'Globally'
+    | 'Before ' signalComp
+    | 'After ' signalComp
+    | 'Between ' signalComp ' and ' signalComp
+    | 'After ' signalComp ' until ' signalComp
     ;
 
 speciflcation:
